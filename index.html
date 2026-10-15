@@ -1,40 +1,244 @@
 <!doctype html>
 <html lang="de">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="index,follow">
-    <title>AlaTooDev</title>
-    <style>
-      :root { color-scheme: light; font-family: Georgia, "Times New Roman", serif; color: #29291f; background: #f1eddf; }
-      body { margin: 0; }
-      main { box-sizing: border-box; max-width: 760px; margin: 0 auto; padding: 48px 24px 72px; }
-      h1 { font-size: clamp(2rem, 8vw, 3.25rem); font-weight: 500; margin: 0 0 0.25rem; }
-      h2 { font-size: 1.35rem; margin: 2rem 0 0.5rem; }
-      p { line-height: 1.65; }
-      .meta { color: #6d6b5d; }
-      .notice { border: 1px solid #a43f32; padding: 1rem; background: #fff8f2; }
-      a { color: #554d18; }
-    
-      nav, footer { font-size: .95rem; } nav a, footer a { margin-right: 1rem; }
-      footer { margin-top: 3rem; border-top: 1px solid #c9c4b0; padding-top: 1rem; }
-      .ph { background: #fff3c4; padding: 0 .2em; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>AlaTooDev</h1>
-      <p class="meta">Kleine Apps, die ohne Konto und ohne Cloud auskommen.</p>
-      <h2>Apps</h2>
-      <p><a href="peaked/index.html"><strong>Peaked</strong></a> – das Bergtagebuch: Gipfel, Fotos und Erinnerungen nach der Tour festhalten, lokal auf deinem Gerät.</p>
-      <h2>Kontakt</h2>
-      <p>E-Mail: <a href="mailto:alatoodevv@gmail.com">alatoodevv@gmail.com</a></p>
-      <footer>
-        <a href="index.html">AlaTooDev</a>
-        <a href="peaked/index.html">Peaked</a>
-        <a href="peaked/datenschutz.html">Datenschutz</a>
-        <a href="impressum.html">Impressum</a>
-      </footer>
-    </main>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- test phase: remove when the site goes live -->
+<title>AlaTooDev · Jede App ein Gipfel</title>
+<meta name="description" content="Vlad und Dev bauen kleine, ehrliche Apps: fair bezahlt, ohne Datensammelei, mit Liebe gemacht. Die erste heißt Peaked, dein Bergtagebuch.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F6FB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0B1A" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/baloo2-800.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/cormorant-600-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="stil.css">
+<script>document.documentElement.classList.add('js'); setTimeout(() => window.karteLaeuft || document.documentElement.classList.remove('js'), 2500) // safety net: if karte.js never runs, show everything</script>
+<script src="dev.js" defer></script>
+<script src="karte.js" defer></script>
+</head>
+<body>
+
+<!-- The living contour map. Drawn by karte.js (WebGL); without it the CSS poster rings stay. -->
+<canvas class="karte" aria-hidden="true"></canvas>
+<div class="hoehenmesser" aria-hidden="true"><span class="hm-wert">0</span> m</div>
+
+<header class="kopf">
+  <a class="marke" href="#start" aria-label="alatoo.dev, zum Seitenanfang">
+    <picture>
+      <source srcset="assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
+      <img src="assets/logo-waagerecht.svg" alt="" width="148" height="39">
+    </picture>
+  </a>
+  <nav class="menue" aria-label="Hauptmenü">
+    <a href="#apps">Apps</a>
+    <a href="#versprechen">Versprechen</a>
+    <a href="#ueber-uns">Über uns</a>
+  </nav>
+  <a class="knopf klein" href="#kontakt">Hallo sagen</a>
+</header>
+
+<main>
+
+<!-- ============ 00 · HERO: the map, Dev on his summit ============ -->
+<section class="held" id="start" aria-labelledby="titel">
+  <div class="held-text">
+    <p class="etikett"><span class="punkt" aria-hidden="true"></span>AlaTooDev · kleine, ehrliche Apps</p>
+    <h1 id="titel"><span class="zeile"><span>Jede App</span></span><span class="zeile"><span>ein <em>Gipfel.</em></span></span></h1>
+    <p class="lead">Ich bin Vlad und baue mit Dev Apps, die eine Sache richtig gut machen: fair bezahlt, ohne Datensammelei, mit Liebe gemacht. Der erste Gipfel heißt Peaked, dein Bergtagebuch.</p>
+    <div class="knoepfe">
+      <a class="knopf" href="#apps">Peaked entdecken</a>
+      <a class="knopf leise" href="#kontakt">Hallo sagen</a>
+    </div>
+  </div>
+
+  <div class="gipfel">
+    <!-- Range names on hiking maps are set in wide caps; Dev stands in front of it -->
+    <p class="gebirge" aria-hidden="true">Ala-Too</p>
+    <!-- Dev comes alive in dev.js; the SVG inside is only shown if that script never runs -->
+    <dev-figur class="dev">
+      <svg viewBox="0 0 100 100" role="img" aria-label="Dev, ein kleiner Berg mit Kalpak und Kulleraugen">
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L88 80 Q91 90 80 90 L20 90 Q9 90 12 80 Z" fill="#3A4BBF" stroke="#3A4BBF" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M33.8 31.8 Q41.5 34.6 48.4 33.4 L50 38.5 L51.6 33.4 Q58.5 34.6 66.2 31.8 Q67.2 31.6 67.8 32.8 L71.2 38.6 Q71.8 40.6 69.8 41.2 Q60 43.8 50 43.6 Q40 43.8 30.2 41.2 Q28.2 40.6 28.8 38.6 L32.2 32.8 Q32.8 31.6 33.8 31.8 Z" fill="#3A4BBF" stroke="#3A4BBF" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L88 80 Q91 90 80 90 L20 90 Q9 90 12 80 Z" fill="#4C5FD5"/>
+        <path d="M50 11.25 Q51.75 11.25 53.5 14.5 L88 80 Q91 90 80 90 L78.5 90 L75.5 72 L70 58 L64 47 L59.55 36.4 L55.5 28 Z" fill="#3A4BBF"/>
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#FFFFFF"/>
+        <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#DCE1F7"/>
+        <path d="M49.6 17 L50.4 17 L50.4 33 L49.6 33 Z" fill="#1A1A2E"/>
+        <path d="M33.8 31.8 Q41.5 34.6 48.4 33.4 L50 38.5 L51.6 33.4 Q58.5 34.6 66.2 31.8 Q67.2 31.6 67.8 32.8 L71.2 38.6 Q71.8 40.6 69.8 41.2 Q60 43.8 50 43.6 Q40 43.8 30.2 41.2 Q28.2 40.6 28.8 38.6 L32.2 32.8 Q32.8 31.6 33.8 31.8 Z" fill="#1A1A2E"/>
+        <g class="augen">
+          <g class="auge"><ellipse cx="39.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><circle cx="41.16" cy="58.77" r="1.77" fill="#FFFFFF"/><circle cx="37.94" cy="63.36" r="0.83" fill="#FFFFFF"/></g>
+          <g class="auge"><ellipse cx="60.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><circle cx="62.16" cy="58.77" r="1.77" fill="#FFFFFF"/><circle cx="58.94" cy="63.36" r="0.83" fill="#FFFFFF"/></g>
+        </g>
+        <path d="M46 69.5 Q48 72.7 50 69.5 Q52 72.7 54 69.5" fill="none" stroke="#1A1A2E" stroke-width="1.8" stroke-linecap="round"/>
+        <ellipse cx="31" cy="69" rx="5.4" ry="3.2" fill="#FF8FB1"/><ellipse cx="69" cy="69" rx="5.4" ry="3.2" fill="#FF8FB1"/>
+      </svg>
+    </dev-figur>
+    <p class="gipfel-name"><em>Devs Gipfel</em><span>hier wohnt Dev</span></p>
+  </div>
+
+  <p class="tipp"><span class="ring" aria-hidden="true"></span><span class="tipp-maus">Klick auf die Karte und setz deinen eigenen Gipfel.</span><span class="tipp-finger">Tipp auf die Karte und setz deinen eigenen Gipfel.</span></p>
+
+  <aside class="legende" aria-label="Legende">
+    <p>Legende</p>
+    <ul>
+      <li><span class="l-linie" aria-hidden="true"></span>Höhenlinie</li>
+      <li><span class="l-linie dick" aria-hidden="true"></span>jede fünfte Linie</li>
+      <li><span class="l-gipfel" aria-hidden="true"></span>Gipfel = eine App</li>
+      <li><span class="l-du" aria-hidden="true"></span>du</li>
+    </ul>
+  </aside>
+  <!-- labels for the peaks a visitor sets; filled by karte.js -->
+  <div class="gipfel-marken" aria-live="polite"></div>
+</section>
+
+<!-- ============ 01 · Apps ============ -->
+<section class="abschnitt" id="apps" aria-labelledby="apps-titel">
+  <div class="abschnitt-kopf" data-zeige>
+    <p class="nummer">01 — Unsere Apps</p>
+    <h2 id="apps-titel">Unsere <em>Gipfel.</em></h2>
+    <p>Der erste ist fast erreicht. Der nächste liegt noch im Nebel.</p>
+  </div>
+
+  <div class="apps">
+    <!-- One app = one card. For a new app copy this <article> block. -->
+    <!-- data-dev-aufregend / data-dev-sagt: what Dev says when this comes into view or under the pointer -->
+    <article class="box peaked" data-zeige data-dev-aufregend="Ooh, Peaked! Schau mal rein!">
+      <div class="peaked-text">
+        <div class="app-kopf">
+          <img src="assets/peaked-icon.png" alt="" width="56" height="56">
+          <p class="mono">Gipfel 01</p>
+          <span class="chip">Bald im Store</span>
+        </div>
+        <h3>Peaked</h3>
+        <p class="claim"><em>Dein Bergtagebuch.</em></p>
+        <p>Halte Gipfel, Touren, Fotos und Erinnerungen fest. Peaked braucht kein Konto: Alles bleibt auf deinem Gerät.</p>
+        <ul class="fakten">
+          <li class="stark">4,99 € einmalig</li>
+          <li>kein Abo</li>
+          <li>keine Werbung</li>
+          <li>ohne Konto</li>
+          <li>Android und iPhone</li>
+        </ul>
+        <blockquote>Peaked plant nicht den nächsten Berg. Es bewahrt den, auf dem du schon warst.</blockquote>
+        <a class="mehr" href="peaked/index.html">Mehr über Peaked <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="handy">
+        <picture>
+          <source srcset="assets/peaked-sammlung-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="assets/peaked-sammlung.jpg" alt="Peaked: die Sammlung mit dem Saison-Poster" width="405" height="720" loading="lazy">
+        </picture>
+      </div>
+    </article>
+
+    <article class="box nebel" data-zeige data-dev-sagt="Psst … das ist noch geheim.">
+      <div class="nebelbild" aria-hidden="true"><span>?</span></div>
+      <p class="mono">Gipfel 02</p>
+      <h3>Noch geheim</h3>
+      <p>Hier entsteht gerade etwas Neues. Mehr verraten wir, sobald sich der Nebel lichtet.</p>
+      <a class="mehr" href="mailto:alatoodevv@gmail.com?subject=App%202">Zuerst davon hören <span aria-hidden="true">→</span></a>
+    </article>
+
+    <article class="box idee" data-zeige data-dev-sagt="Erzähl! Ich bin ganz Ohr. Also, ganz Berg.">
+      <div class="ideenbild" aria-hidden="true"><span></span></div>
+      <p class="mono">Gipfel 03?</p>
+      <h3>Deine Idee</h3>
+      <p>Dir fehlt eine App, die eine Sache richtig gut macht? Erzähl uns davon.</p>
+      <a class="mehr" href="mailto:alatoodevv@gmail.com?subject=Meine%20App-Idee">Idee schicken <span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 02 · Versprechen ============ -->
+<section class="abschnitt" id="versprechen" aria-labelledby="versprechen-titel">
+  <div class="abschnitt-kopf" data-zeige>
+    <p class="nummer">02 — Unsere Versprechen</p>
+    <h2 id="versprechen-titel">Vier Regeln für <em>jede&nbsp;App.</em></h2>
+    <p>Daran hält sich jede App von uns.</p>
+  </div>
+
+  <div class="regeln">
+    <article class="box regel blau" data-zeige>
+      <span class="nr">01</span>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><path d="M12 15v2"/></svg></span>
+      <h3>Deine Daten gehören dir</h3>
+      <p>Kein Konto, wo keins nötig ist. Was auf deinem Gerät laufen kann, bleibt dort. Und deine Daten verkaufen wir nie.</p>
+    </article>
+    <article class="box regel" data-zeige>
+      <span class="nr">02</span>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v3.6h-3.6"/><path d="M4.5 19.5l15-15"/></svg></span>
+      <h3>Kein Abo ohne Grund</h3>
+      <p>Was uns nichts laufend kostet, kaufst du einmal. Kostet etwas laufend Geld, zum Beispiel KI, sagen wir das offen, und du kannst jederzeit kündigen.</p>
+    </article>
+    <article class="box regel" data-zeige>
+      <span class="nr">03</span>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18l-7.2-12-3.3 5.3-2.1-2.8z"/><path d="M13.8 8V3.5l4 1.6-4 1.6"/></svg></span>
+      <h3>Klein und fertig</h3>
+      <p>Lieber eine Sache richtig gut als zehn Sachen halb. Jede App hat genau einen Gipfel.</p>
+    </article>
+    <article class="box regel" data-zeige>
+      <span class="nr">04</span>
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg></span>
+      <h3>Mit Liebe gemacht</h3>
+      <p>Gestaltung, zu der du gern zurückkommst. Und ab und zu versteckt sich Dev in einer App.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 03 · Über uns ============ -->
+<section class="abschnitt" id="ueber-uns" aria-labelledby="ueber-titel">
+  <div class="ueber">
+    <div class="abschnitt-kopf" data-zeige>
+      <p class="nummer">03 — Über uns</p>
+      <h2 id="ueber-titel">Hi, ich bin <em>Vlad.</em></h2>
+      <p>AlaTooDev ist meine kleine Firma. Ich baue Apps, die eine Sache richtig gut machen, und zwar so, dass du ihnen vertrauen kannst.</p>
+      <p>Der Name kommt vom Ala-Too, einem Gebirge im Tian Shan in Kirgisistan. Übersetzt heißt das etwa „buntes Gebirge“. Darum ist diese Seite eine Karte voller Höhenlinien, und jede App ist ein Gipfel darauf.</p>
+      <p>Dev begleitet mich: ein kleiner Berg mit Kalpak, dem traditionellen kirgisischen Filzhut. Auf Türkisch heißt „dev“ Riese. Ein kleiner Berg mit großem Namen.</p>
+    </div>
+
+    <aside class="box steckbrief" data-zeige aria-label="Steckbrief von Dev" data-dev-aufregend="Hey, das bin ja ich!">
+      <div class="steckbrief-kopf">
+        <img src="assets/favicon.svg" alt="" width="64" height="64">
+        <p><em>Steckbrief</em><span class="mono">Dev · Maskottchen</span></p>
+      </div>
+      <dl>
+        <dt>Ist</dt><dd>ein Berg. Ein kleiner.</dd>
+        <dt>Trägt</dt><dd>einen Kalpak</dd>
+        <dt>Farbe</dt><dd>Blau, #4C5FD5</dd>
+        <dt>Aufgabe</dt><dd>passt auf, dass Apps Freude machen</dd>
+        <dt>Wohnt</dt><dd>ganz oben auf dieser Karte</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ 04 · Kontakt ============ -->
+<section class="abschnitt kontakt" id="kontakt" aria-labelledby="kontakt-titel" data-zeige>
+  <p class="nummer">04 — Kontakt</p>
+  <dev-figur class="dev-jubel" jubelt gruss="Ich sag schon mal Hallo!"><img src="assets/dev-jubel.svg" alt="" width="120" height="120"></dev-figur>
+  <h2 id="kontakt-titel">Sag <em>Hallo.</em></h2>
+  <p>Fragen, Ideen oder einfach ein Gruß: Ich lese jede Nachricht selbst.</p>
+  <!-- after the domain purchase: hallo@alatoo.dev -->
+  <a class="knopf gross" href="mailto:alatoodevv@gmail.com" data-dev-aufregend="Ich freu mich auf deine Nachricht!"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>alatoodevv@gmail.com</a>
+</section>
+
+</main>
+
+<footer class="fuss">
+  <picture>
+    <source srcset="assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
+    <img src="assets/logo-waagerecht.svg" alt="alatoo.dev" width="122" height="32">
+  </picture>
+  <nav aria-label="Rechtliches">
+    <a href="peaked/index.html">Peaked</a>
+    <a href="peaked/datenschutz.html">Datenschutz</a>
+    <a href="impressum.html">Impressum</a>
+  </nav>
+  <p>© 2026 AlaTooDev · keine Cookies, kein Tracking</p>
+</footer>
+
+<!-- small Dev at the bottom right, while neither big Dev is in view -->
+<dev-figur class="begleiter" begleiter stumm></dev-figur>
+
+</body>
 </html>
