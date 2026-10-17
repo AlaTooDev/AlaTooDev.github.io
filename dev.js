@@ -48,10 +48,15 @@ const SVG = `<svg viewBox="0 0 100 100" aria-hidden="true">
   <g class="hut"><path d="${HUT}" fill="${SCHATTEN}" stroke="${SCHATTEN}" stroke-width="3" stroke-linejoin="round"/></g>
   <path d="${KOERPER}" fill="${BLAU}"/>
   <path d="M50 11.25 Q51.75 11.25 53.5 14.5 L88 80 Q91 90 80 90 L78.5 90 L75.5 72 L70 58 L64 47 L59.55 36.4 L55.5 28 Z" fill="${SCHATTEN}"/>
-  <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#fff"/>
-  <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#DCE1F7"/>
-  <path d="M49.6 17 L50.4 17 L50.4 33 L49.6 33 Z" fill="${NACHT}"/>
-  <g class="hut"><path d="${HUT}" fill="${NACHT}"/><path class="hut-treffer" d="${HUT}" fill="none" stroke="transparent" stroke-width="8" pointer-events="all"/></g>
+  <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 Q50 44.5 33.1 40 Z" fill="#F6C9A4"/>
+  <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#E3A781"/>
+  <path d="M46.6 18.5 Q48 15.6 49.4 16.4 Q48.6 19 46.9 24.5 Q45.6 22 46.6 18.5 Z" fill="#FFE9D9"/>
+  <g class="hut">
+    <path class="hut-treffer" d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#fff" stroke="${SCHATTEN}" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+    <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#DCE1F7"/>
+    <path d="M49.6 17 L50.4 17 L50.4 33 L49.6 33 Z" fill="${NACHT}"/>
+    <path d="${HUT}" fill="${NACHT}"/><path class="hut-treffer" d="${HUT}" fill="none" stroke="transparent" stroke-width="8" pointer-events="all"/>
+  </g>
   <g class="gesicht">
     <g class="augen">${auge(39.5, true)}${auge(60.5, false)}</g>
     ${strich('m-laecheln', 'M46 69.5 Q48 72.7 50 69.5 Q52 72.7 54 69.5', 1.8)}
@@ -366,8 +371,8 @@ class DevFigur extends HTMLElement {
       e.kreis.forEach((st, i) => { const w = s * 4 + i * 2.094; st.setAttribute('transform', `translate(${(50 + Math.cos(w) * 19).toFixed(2)} ${(22 + Math.sin(w) * 5).toFixed(2)})`); });
     }
 
-    // the hat: follows the gaze a little (parallax); after a tap on it, it flies off and lands crooked
-    let hx = bx * .7, hy = by * .35, rot = 0;
+    // the whole kalpak (felt + brim): after a tap on it, it flies off, shows the bald head and lands crooked
+    let hx = 0, hy = 0, rot = 0; // the white felt is part of the hat now, so no gaze parallax: it would slide off the head
     if (this.hutFlug) {
       const t = jetzt - this.hutFlug;
       if (t < 900) { const u = t / 900; hy -= 50 * Math.sin(Math.PI * u); hx += 5 * u; rot = 706 * u; }
