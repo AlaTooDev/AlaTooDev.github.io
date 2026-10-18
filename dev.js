@@ -48,8 +48,8 @@ const SVG = `<svg viewBox="0 0 100 100" aria-hidden="true">
   <g class="hut"><path d="${HUT}" fill="${SCHATTEN}" stroke="${SCHATTEN}" stroke-width="3" stroke-linejoin="round"/></g>
   <path d="${KOERPER}" fill="${BLAU}"/>
   <path d="M50 11.25 Q51.75 11.25 53.5 14.5 L88 80 Q91 90 80 90 L78.5 90 L75.5 72 L70 58 L64 47 L59.55 36.4 L55.5 28 Z" fill="${SCHATTEN}"/>
-  <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 Q50 44.5 33.1 40 Z" fill="#F6C9A4"/>
-  <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#E3A781"/>
+  <path d="M46.5 14.5 Q50 8 53.5 14.5 L60.6 28 Q50 31 39.4 28 Z" fill="#F6C9A4"/>
+  <path d="M53.5 14.5 L60.6 28 Q58 28.9 55.3 29.4 L52.6 18.5 Z" fill="#E3A781"/>
   <path d="M46.6 18.5 Q48 15.6 49.4 16.4 Q48.6 19 46.9 24.5 Q45.6 22 46.6 18.5 Z" fill="#FFE9D9"/>
   <g class="hut">
     <path class="hut-treffer" d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#fff" stroke="${SCHATTEN}" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
