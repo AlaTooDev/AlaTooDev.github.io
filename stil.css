@@ -90,9 +90,10 @@
 /* ---------- base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 /* every page snaps into place; a fast flick still stops at the next page.
-   Phones and very low windows only snap when close, because their pages are often taller than the screen. */
+   Phones and very low windows scroll freely: their pages are taller than the screen, and even a gentle
+   proximity snap kept pulling the reader back to the start of a page (Vlad on his phone, round 5). */
 html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-@media (max-width: 880px), (max-height: 600px) { html { scroll-snap-type: y proximity; } }
+@media (max-width: 880px), (max-height: 600px) { html { scroll-snap-type: none; } }
 body {
   margin: 0; overflow-x: hidden;
   background: radial-gradient(1100px 760px at 72% 38%, var(--grund-2), var(--grund) 72%) var(--grund);
@@ -146,9 +147,8 @@ em { font-family: var(--serif); font-style: italic; font-weight: 600; }
 .menue { display: flex; gap: 2px; }
 .menue a { position: relative; z-index: 1; padding: 12px 14px; border-radius: 999px; text-decoration: none; font: 600 .9375rem/1 var(--sans); transition: color .35s; }
 .menue a:hover { background: var(--rand); }
-.kopf > .knopf { position: relative; z-index: 1; background: transparent; border-color: var(--knopf); color: var(--blau-text); box-shadow: none; transition: color .35s, border-color .35s, background .2s, transform .25s cubic-bezier(.3, 1.4, .5, 1); }
-.kopf > .knopf:hover { background: var(--rand); }
-.menue a[aria-current], .kopf > .knopf[aria-current] { color: var(--knopf-text); background: transparent; border-color: transparent; }
+.menue a[aria-current] { color: var(--knopf-text); background: transparent; }
+.menue small, .menue-knopf { display: none; } /* numbers and the round button only on phones */
 /* the green pill under the current page's link. seiten.js sets its edges; the leading edge moves first, the other follows,
    so it stretches like a caterpillar on the way */
 .schlitten {
@@ -572,13 +572,39 @@ blockquote { margin: 22px 0 18px; padding-left: 18px; border-left: 3px solid var
   .seite.links, .seite.rechts { border-radius: 14px; background: var(--papier); }
   .eintraege { max-height: 380px; }
 }
-@media (max-width: 760px) { /* only the Gipfelbuch button is left: it stays filled */
-  .menue, .schlitten { display: none; }
-  .kopf > .knopf { background: var(--knopf); color: var(--knopf-text); }
+/* phones: a round button; the menu unfolds from it like contour rings spreading out, the pages drop in one after another */
+@media (max-width: 760px) {
+  .schlitten { display: none; }
+  .menue-knopf {
+    display: block; position: relative; width: 44px; height: 44px; padding: 0; border: 1px solid var(--rand); border-radius: 50%;
+    background: transparent; color: var(--text); cursor: pointer; transition: background .3s, color .3s;
+  }
+  .menue-knopf i { position: absolute; left: 13px; right: 13px; top: calc(50% - 1px); height: 2px; border-radius: 2px; background: currentColor; transition: translate .3s, rotate .45s cubic-bezier(.3, 1.5, .5, 1); }
+  .menue-knopf i:first-child { translate: 0 -4px; }
+  .menue-knopf i:last-child { translate: 0 4px; }
+  .offen .menue-knopf { background: var(--text); color: var(--grund); }
+  .offen .menue-knopf i { translate: 0 0; rotate: 45deg; }
+  .offen .menue-knopf i:last-child { rotate: -45deg; }
+  .menue {
+    --mitte: calc(100% - 30px) -38px; /* the button's center, above the panel */
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0; flex-direction: column; gap: 2px; padding: 10px;
+    border: 1px solid var(--rand); border-radius: 28px; box-shadow: 0 24px 50px -24px rgba(26, 26, 46, .5);
+    background: repeating-radial-gradient(circle at var(--mitte), transparent 0 31px, var(--rand) 31px 32px) var(--flaeche-fest);
+    clip-path: circle(0 at var(--mitte)); visibility: hidden;
+    transition: clip-path .45s cubic-bezier(.65, 0, .35, 1), visibility 0s .45s;
+  }
+  .offen .menue { clip-path: circle(140% at var(--mitte)); visibility: visible; transition: clip-path .7s cubic-bezier(.65, 0, .25, 1), visibility 0s; }
+  .menue a {
+    display: flex; align-items: baseline; gap: 16px; padding: 16px 18px; border-radius: 18px; font-size: 1.3rem;
+    opacity: 0; translate: 0 -12px; transition: opacity .2s, translate .2s, background .2s, color .2s;
+  }
+  .offen .menue a { opacity: 1; translate: 0 0; transition: opacity .35s, translate .55s cubic-bezier(.3, 1.5, .5, 1), background .2s, color .2s; transition-delay: calc(.12s + var(--i, 0) * 55ms); }
+  .menue small { display: inline; font: 700 .75rem/1 var(--mono); letter-spacing: .12em; color: var(--blau-text); }
+  .menue a[aria-current] { background: var(--knopf); }
+  .menue a[aria-current] small { color: inherit; }
 }
 @media (max-width: 520px) {
   h1 { font-size: clamp(3.2rem, 16vw, 4.6rem); }
-  .kopf .knopf.klein { padding: 0 14px; }
   .post .knopf { white-space: normal; text-align: center; }
 }
 

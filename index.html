@@ -56,13 +56,15 @@
   </a>
   <!-- the green pill slides to the page you are on (seiten.js) -->
   <span class="schlitten weg" aria-hidden="true"></span>
-  <nav class="menue" aria-label="Hauptmenü">
-    <a href="#apps">Apps</a>
-    <a href="#horizont">Horizont</a>
-    <a href="#wegregeln">Wegregeln</a>
-    <a href="#ueber-mich">Über mich</a>
+  <!-- phones: the menu folds out of this button -->
+  <button class="menue-knopf" type="button" aria-expanded="false" aria-controls="menue" aria-label="Menü"><i></i><i></i></button>
+  <nav class="menue" id="menue" aria-label="Hauptmenü">
+    <a href="#apps"><small>01</small>Apps</a>
+    <a href="#horizont"><small>02</small>Horizont</a>
+    <a href="#wegregeln"><small>03</small>Wegregeln</a>
+    <a href="#ueber-mich"><small>04</small>Über mich</a>
+    <a href="#gipfelbuch"><small>05</small>Gipfelbuch</a>
   </nav>
-  <a class="knopf klein" href="#gipfelbuch">Gipfelbuch</a>
 </header>
 
 <!-- One section = one page (snap scrolling in stil.css). The stages on the right show where you are on the climb,

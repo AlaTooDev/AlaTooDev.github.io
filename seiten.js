@@ -15,7 +15,7 @@ document.querySelectorAll('[data-tiefe]').forEach(el => el.style.setProperty('--
 
 /* ---------- the green pill in the header slides to the page you are on ---------- */
 const kopf = document.querySelector('.kopf'), schlitten = kopf.querySelector('.schlitten');
-const reiter = [...kopf.querySelectorAll('.menue a, .kopf > .knopf')];
+const reiter = [...kopf.querySelectorAll('.menue a')];
 let schlittenX = 0;
 function schiebe(sofort = false) {
   const a = reiter.find(r => r.hash === '#' + seiten[aktiv]?.id);
@@ -60,6 +60,14 @@ const plane = () => { if (!geplant) { geplant = true; requestAnimationFrame(mess
 addEventListener('scroll', plane, { passive: true });
 addEventListener('resize', () => { plane(); schiebe(true); });
 document.fonts?.ready.then(() => schiebe(true)); // link widths change once the fonts are in
+
+/* ---------- phones: the menu folds out of the round button (stil.css), any choice or tap elsewhere folds it back ---------- */
+const menueKnopf = kopf.querySelector('.menue-knopf');
+const klappe = auf => { kopf.classList.toggle('offen', auf); menueKnopf.setAttribute('aria-expanded', auf); };
+menueKnopf.addEventListener('click', () => klappe(!kopf.classList.contains('offen')));
+reiter.forEach((a, i) => { a.style.setProperty('--i', i); a.addEventListener('click', () => klappe(false)); });
+document.addEventListener('pointerdown', e => kopf.contains(e.target) || klappe(false));
+addEventListener('keydown', e => { if (e.key === 'Escape' && kopf.classList.contains('offen')) { klappe(false); menueKnopf.focus(); } });
 
 /* ---------- glide: one wheel gesture = one page, with our own easing ----------
    Chrome's own snap after a wheel notch was abrupt, and a fast spin skipped pages. Arrow keys stay native (they were fine). */
