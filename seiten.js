@@ -1,6 +1,6 @@
 // alatoo.dev: one section = one page. The snapping itself is CSS (stil.css); this file adds the motion between pages,
 // the glide on the mouse wheel, the green pill in the header, the stages on the right, the hopping arrow,
-// the relief model on the horizon page and the opening animation.
+// the relief model on the horizon page and the opening flight through the clouds.
 
 {
 const html = document.documentElement;
@@ -281,67 +281,74 @@ if (relief) {
 
 messe();
 
-/* ---------- opening: the contour lines of a summit are surveyed, Dev pops up on top and flies to his place ----------
-   About 2.4 s, any click, key or scroll skips it. Only on a fresh visit (decided in the <head> of index.html). */
+/* ---------- opening: a drone flight down through the clouds onto Dev's summit ----------
+   About 2.3 s, any click, key or scroll skips it. Only on a fresh visit (decided in the <head> of index.html). */
 const auftakt = document.querySelector('.auftakt');
 if (auftakt && html.classList.contains('auftakt-laeuft')) {
-  const dev = document.querySelector('.dev'), grund = auftakt.querySelector('.auftakt-grund'), buehne = auftakt.querySelector('.auftakt-buehne');
-  const ringe = auftakt.querySelector('.auftakt-ringe'), marke = auftakt.querySelector('.auftakt-marke'), hoehe = auftakt.querySelector('.auftakt-hoehe'), zahl = hoehe.querySelector('span');
-  const SPITZE = { x: 16, y: -24 }; // the summit in ring coordinates (viewBox -200 … 200)
-  dev.begruesst = true; // he says hello after landing, not behind the curtain
+  const dev = document.querySelector('.dev'), gipfel = document.querySelector('.gipfel');
+  const nebel = auftakt.querySelector('.auftakt-nebel'), marke = auftakt.querySelector('.auftakt-marke');
+  const wolken = [...auftakt.querySelectorAll('.auftakt-wolke')]; // back to front
+  dev.begruesst = true; // he says hello when the clouds open over him, not behind them
 
-  // nine contour lines, outside in, drifting toward the summit; every fourth is an index contour (thicker, as on real maps)
-  for (let i = 0; i < 9; i++) {
-    const f = 1 - i / 9.4, punkte = [];
-    for (let j = 0; j < 120; j++) {
-      const w = j / 120 * Math.PI * 2, r = 190 * f * (1 + f * (.07 * Math.sin(2 * w + .4 + i * .3) + .05 * Math.sin(3 * w + 2.1 - i * .2) + .025 * Math.sin(5 * w + 4.4)));
-      punkte.push(`${(SPITZE.x * (1 - f) + r * Math.cos(w)).toFixed(1)} ${(SPITZE.y * (1 - f) + r * Math.sin(w)).toFixed(1)}`);
+  // the camera dives onto Dev's summit; on phones he may sit low, so the point stays on screen
+  const d = dev.getBoundingClientRect();
+  const zx = Math.min(innerWidth * .85, Math.max(innerWidth * .15, d.left + d.width / 2));
+  const zy = Math.min(innerHeight * .8, Math.max(innerHeight * .2, d.top + d.height / 2));
+
+  // cloud sheets from the map's own noise (fbm in karte.js), drawn at a sixth of the screen size: the upscaling makes them soft.
+  // Far sheets have small clouds, near ones big. The front sheet is solid cloud the camera passes through; the ones behind thin out
+  // around the summit, so they open there as they grow. Lit from the top left.
+  const farbe = n => getComputedStyle(html).getPropertyValue(n).trim().match(/\w\w/g).map(x => parseInt(x, 16));
+  const licht = farbe('--wolke-licht'), schatten = farbe('--wolke-schatten');
+  const W = Math.ceil(innerWidth / 6), H = Math.ceil(innerHeight / 6), diag = Math.hypot(W, H);
+  const weich = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  if (typeof fbm === 'function' && W > 1 && H > 1) wolken.forEach((c, k) => {
+    const mass = .05 - k * .011, loch = [.26, .14, 0][k], dicht = [.42, .4, .34][k], n = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) n[y * W + x] = fbm(x * mass + k * 7.3, y * mass * 1.15 - k * 3.1);
+    c.width = W; c.height = H;
+    const g = c.getContext('2d'), bild = g.createImageData(W, H);
+    for (let i = 0; i < W * H; i++) {
+      const x = i % W, y = (i - x) / W, nach = n[Math.min(W * H - 1, i + 2 * W + 2)];
+      const hell = Math.min(1, Math.max(0, .5 + (n[i] - nach) * 14));
+      for (let j = 0; j < 3; j++) bild.data[i * 4 + j] = schatten[j] + (licht[j] - schatten[j]) * hell;
+      bild.data[i * 4 + 3] = 255 * weich(dicht, dicht + .22, n[i]) * (loch ? weich(loch * .35, loch * 2.3, Math.hypot(x - zx / 6, y - zy / 6) / diag) : 1);
     }
-    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    p.setAttribute('d', `M${punkte.join('L')}Z`); p.setAttribute('pathLength', '1');
-    if (i % 4 === 0) p.classList.add('haupt');
-    ringe.append(p);
-  }
-  marke.replaceChildren(...[...marke.childNodes].flatMap(n => n.nodeType === Node.TEXT_NODE ? [...n.textContent].map(z => Object.assign(document.createElement('span'), { textContent: z })) : [n]));
-
-  // Dev on the summit: a copy of the picture inside the real Dev, which flies to the real Dev's place
-  const r = ringe.getBoundingClientRect(), gross = r.width * .26;
-  const figur = Object.assign(document.createElement('div'), { className: 'auftakt-dev' });
-  figur.append(dev.querySelector(':scope > svg').cloneNode(true));
-  Object.assign(figur.style, { width: `${gross}px`, height: `${gross}px`, left: `${r.left + (SPITZE.x + 200) / 400 * r.width - gross / 2}px`, top: `${r.top + (SPITZE.y + 200) / 400 * r.height - gross * .78}px` });
-  auftakt.append(figur);
+    g.putImageData(bild, 0, 0);
+    c.style.transformOrigin = `${zx}px ${zy}px`;
+  });
 
   const laeufe = [];
   const spiele = (el, bilder, o) => laeufe.push(el.animate(bilder, { fill: 'both', ...o }));
-  [...ringe.children].forEach((p, i) => spiele(p, [{ strokeDashoffset: 1, opacity: 0 }, { strokeDashoffset: 0, opacity: 1 }], { duration: 850, delay: 60 + i * 80, easing: 'cubic-bezier(.3, .7, .2, 1)' }));
-  spiele(hoehe, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 150, easing: 'ease-out' });
-  spiele(figur, [{ transform: 'translateY(40%) scale(0)' }, { transform: 'translateY(-10%) scale(1.12)', offset: .6 }, { transform: 'none' }], { duration: 650, delay: 820, easing: 'cubic-bezier(.2, .8, .3, 1)' });
-  [...marke.children].forEach((z, i) => spiele(z, [{ opacity: 0, transform: 'translateY(60%) rotate(8deg)' }, { opacity: 1, transform: 'none' }], { duration: 650, delay: 980 + i * 40, easing: 'cubic-bezier(.2, .9, .3, 1.2)' }));
-  // the dive: the summit comes at you, the lines rush past, the page shows through
-  const s = buehne.getBoundingClientRect();
-  buehne.style.transformOrigin = `${r.left - s.left + (SPITZE.x + 200) / 400 * r.width}px ${r.top - s.top + (SPITZE.y + 200) / 400 * r.height}px`;
-  spiele(buehne, [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(2.2)', opacity: 1, offset: .5 }, { transform: 'scale(9)', opacity: 0 }], { duration: 900, delay: 1580, easing: 'cubic-bezier(.55, 0, .8, .4)' });
-  spiele(marke, [{ opacity: 1 }, { opacity: 0 }], { duration: 250, delay: 1580, easing: 'ease-in' });
-  spiele(hoehe, [{ opacity: 1 }, { opacity: 0 }], { duration: 250, delay: 1580, easing: 'ease-in', fill: 'forwards' }); // forwards: must not hide the fade-in before it starts
-  spiele(grund, [{ opacity: 1 }, { opacity: 0 }], { duration: 700, delay: 1720, easing: 'ease-in-out' });
-  // Dev flies in an arc to his summit on the page
-  const z = dev.getBoundingClientRect(), fx = parseFloat(figur.style.left) + gross / 2, fy = parseFloat(figur.style.top) + gross / 2; // not the measured box: it starts at size 0
-  const dx = z.left + z.width / 2 - fx, dy = z.top + z.height / 2 - fy, k = z.width / gross;
-  spiele(figur, [{ transform: 'none' }, { transform: `translate(${dx * .5}px, ${dy * .5 - 110}px) scale(${(1 + k) / 2}) rotate(-10deg)`, easing: 'cubic-bezier(.3, 0, .6, 1)' }, { transform: `translate(${dx}px, ${dy}px) scale(${k})` }], { duration: 900, delay: 1580, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' });
+  const vorbei = 'cubic-bezier(.55, 0, .85, .45)'; // faster and faster as it passes the camera
+  spiele(marke, [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: 80, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+  spiele(marke, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(2.6)' }], { duration: 750, delay: 700, easing: vorbei, fill: 'forwards' }); // forwards: must not hide the fade-in before it starts
+  spiele(nebel, [{ opacity: 1 }, { opacity: 0 }], { duration: 600, delay: 550, easing: 'ease-in-out' });
+  [[1.9, 1400, 800], [2.5, 1150, 650], [3.4, 950, 500]].forEach(([gross, duration, delay], k) =>
+    spiele(wolken[k], [{ transform: 'none', opacity: 1 }, { transform: `scale(${(1 + gross) / 2})`, opacity: 1, offset: .45 }, { transform: `scale(${gross})`, opacity: 0 }], { duration, delay, easing: vorbei }));
 
-  // the altimeter climbs while the lines are drawn
-  const t0 = performance.now();
-  const zaehle = jetzt => { const t = Math.min(1, (jetzt - t0) / 1350); zahl.textContent = Math.round(3100 * (1 - (1 - t) ** 3)).toLocaleString('de-DE'); if (t < 1 && !fertig) requestAnimationFrame(zaehle); };
-  requestAnimationFrame(zaehle);
+  // the descent: map and summit grow toward the camera and settle (karte.js reads window.anflug)
+  const t0 = performance.now(), TIEF = .84, o = gipfel.getBoundingClientRect();
+  gipfel.style.transformOrigin = `${d.left + d.width / 2 - o.left}px ${d.bottom - o.top}px`; // Dev's feet
+  const sinke = jetzt => {
+    if (fertig) return;
+    const t = Math.min(1, Math.max(0, (jetzt - t0 - 450) / 1850));
+    window.anflug = TIEF + (1 - TIEF) * (1 - (1 - t) ** 3); // slows down as the drone arrives
+    gipfel.style.transform = `scale(${window.anflug})`;
+    if (t < 1) requestAnimationFrame(sinke); else ende();
+  };
+  requestAnimationFrame(sinke);
 
-  let fertig = false;
+  let fertig = false, gegruesst = false;
+  const gruesse = () => { if (!gegruesst) { gegruesst = true; dev.begruesse?.(); } };
+  setTimeout(gruesse, 1500); // the clouds have opened over his summit
   const ende = () => {
     if (fertig) return;
     fertig = true;
     ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(n => removeEventListener(n, ueberspringe, true));
+    window.anflug = 1;
+    gipfel.style.transform = gipfel.style.transformOrigin = '';
     html.classList.remove('auftakt-laeuft');
-    figur.remove();
-    dev.begruesse?.();
+    gruesse();
   };
   const ueberspringe = e => {
     if (e.type === 'wheel') { e.preventDefault(); e.stopPropagation(); } // this scroll only skips, it does not move a page yet
@@ -350,6 +357,5 @@ if (auftakt && html.classList.contains('auftakt-laeuft')) {
     ende();
   };
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(n => addEventListener(n, ueberspringe, { capture: true, passive: n !== 'wheel' }));
-  laeufe.at(-1).finished.then(ende, ende);
 }
 }

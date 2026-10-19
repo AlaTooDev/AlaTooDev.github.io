@@ -82,7 +82,7 @@ const GIPFEL_HOEHE = .62, GIPFEL_RADIUS = 80, MAX_GIPFEL = 3, LEBENSDAUER = 1200
 let gipfel = [], gipfelZahl = 0, welle = null;
 const S = { zeit: 0, scroll: 0, zoom: 1, mass: 360, mitteX: 0, mitteY: 0, dev: [0, 0, 1], ziel: [0, -9999, 1], held: null };
 const zielTitel = $('#buch-titel');
-const AUFTAKT = html.classList.contains('auftakt-an') ? 1.6 : .2; // the map spreads from Dev when he lands after the opening (seiten.js)
+const AUFTAKT = html.classList.contains('auftakt-an') ? -9 : .2; // the map spreads from Dev; under the opening's clouds (seiten.js) it is already whole
 
 function hoeheBei(x, y) {
   const px = (x - S.mitteX) / (S.mass * S.zoom) + 3.1, py = (y - S.mitteY) / (S.mass * S.zoom) + 1.7 + S.scroll * .35 / S.mass;
@@ -285,7 +285,7 @@ function starteKarte() {
     const k = Math.min(1, scrollY / (innerHeight * .9)), weich = k * k * (3 - 2 * k);
     // between two pages the camera lifts off and the lines light up; once a page sits, the map calms down behind the text
     const unterwegs = ruhig ? 0 : Math.sin(Math.PI * fract(scrollY / innerHeight)) ** 2;
-    S.scroll = scrollY; S.zoom = (1 + .35 * weich) * (1 + .12 * unterwegs);
+    S.scroll = scrollY; S.zoom = (1 + .35 * weich) * (1 + .12 * unterwegs) * (window.anflug || 1); // anflug: the opening's descent (seiten.js)
     S.mass = Math.min(460, Math.max(260, innerWidth * .3));
     S.mitteX = canvas.clientWidth / 2; S.mitteY = canvas.clientHeight / 2;
     const r = dev.getBoundingClientRect();
