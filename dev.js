@@ -17,7 +17,7 @@
 
 { // own block scope: pages load this as a classic script, so its names must not clash with theirs
 
-const NACHT = '#1A1A2E', BLAU = '#4C5FD5', SCHATTEN = '#3A4BBF', WANGE = '#FF8FB1', GOLD = '#FFC53D';
+const NACHT = '#1A1A2E', BLAU = '#22A68A', SCHATTEN = '#16836C', WANGE = '#FF8FB1', GOLD = '#FFC53D';
 const SAETZE = ['Ich bin ein Berg. Ein kleiner.', 'Mein Hut heißt Kalpak. Tipp mal drauf!', 'Ich pass auf, dass Apps Freude machen.', 'Deine Daten? Bleiben bei dir.'];
 const HOEHEN = { weg: '115%', spitze: '70%', lugt: '34%', da: '4%' }; // companion: how far he is tucked below the screen edge
 
@@ -53,7 +53,7 @@ const SVG = `<svg viewBox="0 0 100 100" aria-hidden="true">
   <path d="M46.6 18.5 Q48 15.6 49.4 16.4 Q48.6 19 46.9 24.5 Q45.6 22 46.6 18.5 Z" fill="#FFE9D9"/>
   <g class="hut">
     <path class="hut-treffer" d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#fff" stroke="${SCHATTEN}" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
-    <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#DCE1F7"/>
+    <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#D3EEE6"/>
     <path d="M49.6 17 L50.4 17 L50.4 33 L49.6 33 Z" fill="${NACHT}"/>
     <path d="${HUT}" fill="${NACHT}"/><path class="hut-treffer" d="${HUT}" fill="none" stroke="transparent" stroke-width="8" pointer-events="all"/>
   </g>
@@ -79,7 +79,7 @@ const STIL = `
 }
 button { all: unset; display: block; width: 100%; height: 100%; cursor: pointer; border-radius: 30%; }
 button:focus-visible { outline: 3px solid var(--dev-fokus, ${WANGE}); outline-offset: 4px; }
-svg { display: block; width: 100%; height: 100%; overflow: visible; filter: var(--dev-schatten, drop-shadow(0 12px 14px rgba(10, 11, 26, .3))); }
+svg { display: block; width: 100%; height: 100%; overflow: visible; filter: var(--dev-schatten, drop-shadow(0 12px 14px rgba(5, 18, 14, .3))); }
 .strich { fill: none; stroke: ${NACHT}; stroke-linecap: round; stroke-linejoin: round; }
 .wangen { fill: ${WANGE}; transition: fill .3s; }
 .a-freude, .a-zu, .a-hoppla, .a-spirale, .sternglanz, .m-offen, .m-o, .m-wellig, .m-klein, .funken, .zzz, .tropfen, .kreis { display: none; }
@@ -100,7 +100,7 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; filter: var(
 :host([zustand=huch]) :is(.m-o, .tropfen) { display: inline; }
 .funken path { transform-box: fill-box; transform-origin: center; animation: funkeln 1.1s ease-in-out infinite; animation-delay: calc(var(--i) * -.37s); }
 @keyframes funkeln { 50% { transform: scale(.4) rotate(25deg); opacity: .55; } }
-.zzz text { font: 800 10px/1 var(--dev-rund, 'Baloo 2', ui-rounded, system-ui, sans-serif); fill: var(--dev-zzz, #8B97E4); animation: zzz 2.4s ease-in infinite both; animation-delay: calc(var(--i) * .5s); }
+.zzz text { font: 800 10px/1 var(--dev-rund, 'Baloo 2', ui-rounded, system-ui, sans-serif); fill: var(--dev-zzz, #5FD0B5); animation: zzz 2.4s ease-in infinite both; animation-delay: calc(var(--i) * .5s); }
 @keyframes zzz { 0% { opacity: 0; transform: translate(-3px, 5px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -7px); } }
 .blase {
   position: absolute; z-index: 3; left: 50%; bottom: calc(100% + 10px); width: max-content; max-width: min(250px, 78vw); margin: 0;
