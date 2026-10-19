@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de" data-nirgendwo>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<!-- GitHub Pages shows this page for every address that does not exist, at any depth: the base keeps all links and files working.
+     When the site moves to the root of the domain, this becomes <base href="/">. -->
+<base href="/linien/">
+<title>Kein Weg – alatoo.dev</title>
+<meta name="theme-color" content="#EAF2EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07120F" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body class="unterseite">
+
+<canvas class="karte" aria-hidden="true"></canvas>
+<div class="hoehenmesser" aria-hidden="true"><span class="hm-wert">0</span> m</div>
+
+<header class="kopf">
+  <a class="marke" href="./" aria-label="alatoo.dev, zur Startseite">
+    <picture>
+      <source srcset="assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
+      <img src="assets/logo-waagerecht.svg" alt="" width="148" height="39">
+    </picture>
+  </a>
+  <button class="legende-knopf" type="button" aria-expanded="false" aria-controls="legende">Legende</button>
+  <nav class="legende" id="legende" aria-label="Hauptmenü">
+    <span class="schlitten" aria-hidden="true"></span>
+    <a href="peaked/"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-gipfel" d="M10 4 16 15H4Z"/></svg>Peaked</a>
+    <a href="./#regeln"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-weg" d="M2 15C7 14 9 6 18 5"/></svg>Regeln</a>
+    <a href="./#ueber-mich"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><rect class="z-kartusche" x="3" y="5" width="14" height="10"/><rect class="z-kartusche" x="5" y="7" width="10" height="6"/></svg>Über mich</a>
+    <a href="./#gipfelbuch"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-fahne" d="M6 17V3l9 3-9 3"/></svg>Gipfelbuch</a>
+  </nav>
+</header>
+
+<main>
+<!-- lost on the map: Dev stands on the Nirgendwo-Spitze, every height reads 404 m, clicks still set funny summits -->
+<section class="ort start verirrt erste" aria-labelledby="titel">
+  <div class="start-text ruhe">
+    <h1 id="titel" class="freigestellt">Hier führt kein <em>Weg</em> weiter.</h1>
+    <p class="lead">Diese Seite gibt es nicht. Vielleicht hat sich ein Tippfehler eingeschlichen, vielleicht habe ich sie noch nicht gebaut.</p>
+    <p class="aktionen">
+      <a class="knopf" href="./">Zur Startseite</a>
+      <a class="leiser-link" href="peaked/">Peaked ansehen</a>
+    </p>
+  </div>
+  <div class="gipfel">
+    <dev-figur class="dev" stumm data-eigene-saetze="ja">
+      <svg viewBox="0 0 100 100" role="img" aria-label="Dev, ein kleiner Berg mit Kalpak, schaut verwirrt">
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L88 80 Q91 90 80 90 L20 90 Q9 90 12 80 Z" fill="#22A68A"/>
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#FFFFFF"/>
+        <ellipse cx="39.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><ellipse cx="60.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/>
+      </svg>
+    </dev-figur>
+    <p class="gipfelzeichen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4 16 15H4Z"/></svg><span><b>Nirgendwo-Spitze</b> <span class="hoehe">404 m</span></span></p>
+  </div>
+  <div class="gipfel-marken" aria-hidden="true"></div>
+</section>
+</main>
+
+<footer class="fuss">
+  <nav aria-label="Weitere Seiten"><a href="./">Startseite</a><a href="peaked/">Peaked</a><a href="datenschutz.html">Datenschutz</a><a href="impressum.html">Impressum</a></nav>
+  <p>© 2026 alatoo.dev, keine Cookies, kein Tracking</p>
+</footer>
+
+<script src="dev.js"></script>
+<script src="karte.js"></script>
+<script>
+{
+  const dev = document.querySelector('.dev');
+  dev.saetze = ['Ich hab die Seite auch nicht gefunden.', 'Vielleicht liegt sie unter einem anderen Stein?', 'Oben links geht es zurück.', 'Hier oben ist alles 404 m hoch. Komisch, oder?', 'Klick mal auf die Karte!'];
+  setTimeout(() => dev.hoppla?.('Hoppla, hier geht’s nicht weiter!'), 900);
+}
+</script>
+</body>
+</html>

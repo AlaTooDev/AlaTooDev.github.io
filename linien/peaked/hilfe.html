@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Hilfe zu Peaked – alatoo.dev</title>
+<meta name="description" content="Antworten zu Peaked: Konto, Daten, Sicherung, neues Handy, GPX und Kontakt.">
+<meta name="theme-color" content="#EAF2EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07120F" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../stil.css">
+</head>
+<body class="unterseite">
+
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+<canvas class="karte" aria-hidden="true"></canvas>
+<div class="hoehenmesser" aria-hidden="true"><span class="hm-wert">0</span> m</div>
+
+<header class="kopf">
+  <a class="marke" href="../" aria-label="alatoo.dev, zur Startseite">
+    <picture>
+      <source srcset="../assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
+      <img src="../assets/logo-waagerecht.svg" alt="" width="148" height="39">
+    </picture>
+  </a>
+  <button class="legende-knopf" type="button" aria-expanded="false" aria-controls="legende">Legende</button>
+  <nav class="legende" id="legende" aria-label="Hauptmenü">
+    <span class="schlitten" aria-hidden="true"></span>
+    <a href="./" aria-current="page"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-gipfel" d="M10 4 16 15H4Z"/></svg>Peaked</a>
+    <a href="../#regeln"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-weg" d="M2 15C7 14 9 6 18 5"/></svg>Regeln</a>
+    <a href="../#ueber-mich"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><rect class="z-kartusche" x="3" y="5" width="14" height="10"/><rect class="z-kartusche" x="5" y="7" width="10" height="6"/></svg>Über mich</a>
+    <a href="../#gipfelbuch"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-fahne" d="M6 17V3l9 3-9 3"/></svg>Gipfelbuch</a>
+  </nav>
+</header>
+
+<main id="inhalt" class="text-seite ruhe">
+  <p><a class="leiser-link" href="./">Peaked</a></p>
+  <h1 class="freigestellt">Hilfe zu <em>Peaked.</em></h1>
+  <p class="lead">Die häufigsten Fragen, kurz beantwortet. Fehlt deine? Schreib mir an <a href="mailto:alatoodevv@gmail.com?subject=Peaked">alatoodevv@gmail.com</a>, ich antworte selbst.</p>
+
+  <div class="fragen">
+    <details>
+      <summary>Brauche ich ein Konto?</summary>
+      <div><p>Nein. Peaked hat keinen Login und keinen eigenen Server. Du öffnest die App und schreibst los.</p></div>
+    </details>
+    <details>
+      <summary>Wo liegen meine Touren und Fotos?</summary>
+      <div><p>Auf deinem Handy, in der Datenbank der App. Peaked lädt dein Tagebuch nirgendwo hoch. Was genau passiert, steht im <a href="datenschutz.html">Datenschutz für Peaked</a>.</p></div>
+    </details>
+    <details>
+      <summary>Wie sichere ich mein Tagebuch?</summary>
+      <div>
+        <p>Erstelle in Peaked eine Sicherung. Das ist eine Peaked-Datei, die du über das Teilen-Menü an einen Ort deiner Wahl gibst, zum Beispiel in deine Cloud oder per Mail an dich selbst.</p>
+        <p>Zusätzlich kann Peaked nach gespeicherten Touren automatisch eine Sicherung auf dem Gerät ablegen: am iPhone im Peaked-Ordner der Dateien-App, unter Android im Ordner „Dokumente/Peaked“. Sie hebt die letzten drei Kalendertage auf.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Ich habe ein neues Handy. Wie nehme ich alles mit?</summary>
+      <div><p>Erstelle auf dem alten Handy eine Sicherung und bring die Peaked-Datei auf das neue Handy. Dort stellst du sie in Peaked wieder her. Weil es kein Konto gibt, geht der Umzug nur über diese Datei.</p></div>
+    </details>
+    <details>
+      <summary>Funktioniert Peaked ohne Netz?</summary>
+      <div><p>Ja. Das Tagebuch läuft komplett offline. Nur wenn du bewusst eine Karte öffnest, lädt Peaked Kartenbilder von OpenTopoMap, und das Diktat nutzt die Spracherkennung deines Geräts.</p></div>
+    </details>
+    <details>
+      <summary>Kann ich GPX-Dateien importieren?</summary>
+      <div><p>Ja. Importiere eine GPX-Spur, dann liest Peaked Berg, Route und Zahlen selbst heraus. Ältere Gipfel ohne Spur trägst du einfach mit Name und Jahr nach.</p></div>
+    </details>
+    <details>
+      <summary>Was kostet Peaked?</summary>
+      <div><p>4,99 € einmalig. Es gibt kein Abo, keine Werbung, keine In-App-Käufe und keine gesperrten Funktionen.</p></div>
+    </details>
+    <details>
+      <summary>Ich habe einen Fehler gefunden.</summary>
+      <div><p>Danke! Schreib mir an <a href="mailto:alatoodevv@gmail.com?subject=Peaked%20Fehler">alatoodevv@gmail.com</a>, am besten mit deinem Handy-Modell, der Peaked-Version und was du gerade gemacht hast. Ein Bildschirmfoto hilft sehr.</p></div>
+    </details>
+  </div>
+</main>
+
+<footer class="fuss">
+  <nav aria-label="Weitere Seiten"><a href="../">Startseite</a><a href="./">Peaked</a><a href="datenschutz.html">Datenschutz für Peaked</a><a href="../impressum.html">Impressum</a></nav>
+  <p>© 2026 alatoo.dev, keine Cookies, kein Tracking</p>
+</footer>
+
+<dev-figur class="begleiter" begleiter stumm></dev-figur>
+
+<script src="../dev.js"></script>
+<script src="../karte.js"></script>
+</body>
+</html>
