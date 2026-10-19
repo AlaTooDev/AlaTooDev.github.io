@@ -13,13 +13,33 @@
 <link rel="preload" href="assets/baloo2-800.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="assets/cormorant-600-italic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="stil.css">
-<script>document.documentElement.classList.add('js'); setTimeout(() => window.karteLaeuft || document.documentElement.classList.remove('js'), 2500) // safety net: if karte.js never runs, show everything</script>
+<script>
+{
+  const h = document.documentElement;
+  h.classList.add('js');
+  // opening animation (seiten.js): only on a fresh visit, not when coming back from a subpage, jumping to a section or with calm mode
+  try { if (!location.hash && !document.referrer.startsWith(location.origin) && !matchMedia('(prefers-reduced-motion: reduce)').matches) h.classList.add('auftakt-an', 'auftakt-laeuft'); } catch {}
+  // safety nets: if karte.js never runs, show everything; the opening never blocks the page for long
+  setTimeout(() => window.karteLaeuft || h.classList.remove('js'), 2500);
+  setTimeout(() => h.classList.remove('auftakt-an', 'auftakt-laeuft'), 4500);
+}
+</script>
 <script src="dev.js" defer></script>
 <script src="karte.js" defer></script>
 <script src="gipfelbuch.js" defer></script>
 <script src="seiten.js" defer></script>
 </head>
 <body>
+
+<!-- opening animation (seiten.js): the contour lines of a summit are surveyed, Dev pops up and flies to his place -->
+<div class="auftakt" aria-hidden="true">
+  <div class="auftakt-grund"></div>
+  <div class="auftakt-buehne">
+    <svg class="auftakt-ringe" viewBox="-200 -200 400 400"></svg>
+    <p class="auftakt-marke">alatoo<em>.dev</em></p>
+    <p class="auftakt-hoehe"><span>0</span> m</p>
+  </div>
+</div>
 
 <a class="sprung" href="#apps">Zum Inhalt springen</a>
 
@@ -34,6 +54,8 @@
       <img src="assets/logo-waagerecht.svg" alt="" width="148" height="39">
     </picture>
   </a>
+  <!-- the green pill slides to the page you are on (seiten.js) -->
+  <span class="schlitten weg" aria-hidden="true"></span>
   <nav class="menue" aria-label="Hauptmenü">
     <a href="#apps">Apps</a>
     <a href="#horizont">Horizont</a>
@@ -124,73 +146,57 @@
       <blockquote>Peaked plant nicht den nächsten Berg. Es bewahrt den, auf dem du schon warst.</blockquote>
       <a class="mehr" href="peaked/index.html">Mehr über Peaked <span aria-hidden="true">→</span></a>
     </div>
+    <!-- the whole screenshot (1320 × 2868, iPhone), nothing cropped, so time and battery stay readable -->
     <div class="handy">
       <picture>
-        <source srcset="assets/peaked-sammlung-dunkel.jpg" media="(prefers-color-scheme: dark)">
-        <img src="assets/peaked-sammlung.jpg" alt="Peaked: die Sammlung mit dem Saison-Poster" width="405" height="720" loading="lazy">
+        <source srcset="assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)">
+        <img src="assets/peaked-logbuch.jpg" alt="Peaked: das Logbuch mit dem Watzmann als letzter Tour" width="506" height="1100" loading="lazy">
       </picture>
     </div>
   </article>
 </section>
 
-<!-- ============ 02 · Horizont: the next apps, still in the mist ============
-     Five ridges in depth (idea from Meng To's misty emerald mountain layers on Aura). --t = depth: 0 far, 1 front.
-     The front ridges rise faster when the page snaps in and follow the mouse more (seiten.js).
-     The fog over Gipfel 02 can be wiped away with the mouse; underneath a crane is already at work. -->
+<!-- ============ 02 · Horizont: the range as a layered relief model ============
+     Like a laser-cut contour model: the lines of the map rise layer by layer into three summits while the page snaps in.
+     seiten.js draws the layers and sets the pins; the cards below are the legend (data-gipfel = which summit).
+     The old horizon with the fog and the ridges is kept in Designs/hoehenlinien/archiv/runde3-horizont. -->
 <section class="abschnitt horizont" id="horizont" aria-labelledby="horizont-titel">
   <div class="abschnitt-kopf lichtung" data-tiefe=".2">
     <p class="nummer">02 · Horizont</p>
-    <h2 id="horizont-titel">Was hinter dem <em>Nebel</em> liegt.</h2>
-    <p>Peaked ist der erste Gipfel. Die nächsten liegen noch im Dunst. <span class="nur-maus">Wisch mit der Maus durch den Nebel.</span><span class="nur-touch">Tipp in den Nebel.</span></p>
+    <h2 id="horizont-titel">Drei Gipfel, ein <em>Gebirge.</em></h2>
+    <p>Einer steht schon, einer wächst noch im Nebel, und einer wartet auf deine Idee.</p>
   </div>
 
-  <div class="landschaft">
-    <div class="kulisse">
-    <div class="lage l1" style="--t:.08" aria-hidden="true"><svg viewBox="0 0 1600 600" preserveAspectRatio="none">
-      <path d="M0 330 L80 300 L160 318 L250 270 L330 292 L420 250 L500 276 L600 236 L690 262 L780 228 L860 250 L950 222 L1040 256 L1130 240 L1210 268 L1280 300 L1330 312 L1420 296 L1500 270 L1600 284 V600 H0 Z"/>
-      <path class="geruecht" d="M1166 300 L1220 246 L1252 214 L1282 182 L1302 196 L1328 224 L1360 250 L1418 298"/>
-    </svg></div>
-    <div class="lage l2" style="--t:.2" aria-hidden="true"><svg viewBox="0 0 1600 600" preserveAspectRatio="none">
-      <path d="M0 382 L90 354 L170 368 L260 332 L340 346 L430 302 L520 320 L600 266 L668 220 L730 182 L786 140 L838 98 L874 74 L900 60 L926 76 L958 106 L996 126 L1046 168 L1106 206 L1176 234 L1248 276 L1330 298 L1420 330 L1500 318 L1600 340 V600 H0 Z"/>
-      <path class="schnee" d="M838 98 L874 74 L900 60 L926 76 L958 106 L940 110 L924 98 L906 114 L888 102 L866 116 Z"/>
-      <g class="kran"><path d="M980 119 V62 M944 68 H1050 M980 62 L944 68 M980 62 L1050 68 M1036 68 V92"/><rect x="1030" y="92" width="12" height="9" rx="1"/></g>
-    </svg></div>
-    <div class="dunstband" style="--t:.3; --oben:44%" aria-hidden="true"></div>
-    <div class="lage l3" style="--t:.4" aria-hidden="true"><svg viewBox="0 0 1600 600" preserveAspectRatio="none">
-      <path d="M0 432 L110 402 L200 420 L300 374 L380 392 L470 358 L560 386 L650 352 L740 374 L840 342 L930 370 L1030 332 L1120 358 L1210 324 L1300 352 L1400 320 L1490 346 L1600 332 V600 H0 Z"/>
-    </svg></div>
-    <div class="lage l4" style="--t:.65" aria-hidden="true"><svg viewBox="0 0 1600 600" preserveAspectRatio="none">
-      <path d="M0 472 L80 442 L160 412 L230 382 L296 344 L346 322 L380 312 L412 324 L462 352 L540 390 L620 420 L720 430 L820 412 L920 438 L1020 420 L1120 446 L1220 424 L1330 450 L1440 432 L1600 452 V600 H0 Z"/>
-      <path class="fahne" d="M382 276 L436 287 L382 298 Z"/>
-    </svg></div>
-    <div class="dunstband" style="--t:.7; --oben:68%" aria-hidden="true"></div>
-    <div class="lage l5" style="--t:1" aria-hidden="true"><svg viewBox="0 0 1600 600" preserveAspectRatio="none">
-      <path d="M0 542 L120 522 L240 534 L360 502 L480 518 L600 490 L720 508 L840 482 L960 500 L1080 472 L1200 494 L1320 478 L1440 502 L1600 488 V600 H0 Z"/>
-    </svg></div>
-    <canvas class="dunst" aria-hidden="true"></canvas>
-    </div>
+  <div class="relief" aria-hidden="true">
+    <div class="relief-kamera"><div class="relief-modell"><div class="relief-brett"></div></div></div>
+  </div>
 
-    <!-- one trail sign per peak; --x/--y = where its peak is in the landscape (same numbers as the SVG, in %) -->
-    <ol class="ziele">
-      <li class="ziel" style="--x:56.25%; --y:10%; --t:.2" data-dev-sagt="Psst … das ist noch geheim.">
-        <p class="mono">Gipfel 02 · 2027</p>
+  <ol class="ziele" data-tiefe=".3">
+    <li class="ziel" data-gipfel="0">
+      <span class="ziel-fahne erreicht"></span>
+      <div>
+        <p class="mono">Gipfel 01 · erreicht</p>
+        <h3>Peaked</h3>
+        <p>Dein Bergtagebuch, bald für iPhone und Android. <a class="mehr" href="peaked/index.html">Mehr über Peaked <span aria-hidden="true">→</span></a></p>
+      </div>
+    </li>
+    <li class="ziel" data-gipfel="1" data-dev-sagt="Psst … das ist noch geheim.">
+      <span class="ziel-fahne nebel"></span>
+      <div>
+        <p class="mono">Gipfel 02 · im Aufstieg</p>
         <h3>Noch im Nebel</h3>
-        <p>Die nächste App ist schon unterwegs. Was sie kann, verraten wir, wenn sich der Nebel lichtet.</p>
-        <a class="mehr" href="mailto:alatoodevv@gmail.com?subject=Gipfel%2002">Als Erstes davon hören <span aria-hidden="true">→</span></a>
-      </li>
-      <li class="ziel" style="--x:80.1%; --y:30.3%; --t:.08">
-        <p class="mono">Gipfel 03 · irgendwann</p>
-        <h3>Nur ein Gerücht</h3>
-        <p>Ein Skizzenbuch voller Ideen. Welche davon ein Gipfel wird, entscheidet sich unterwegs.</p>
-      </li>
-      <li class="ziel" style="--x:23.75%; --y:52%; --t:.65" data-dev-sagt="Der hier könnte deiner sein!">
-        <p class="mono">Gipfel 04 · deiner?</p>
+        <p>Die nächste App ist schon unterwegs. Was sie kann, verraten wir, wenn sich der Nebel lichtet. <a class="mehr" href="mailto:alatoodevv@gmail.com?subject=Gipfel%2002">Als Erstes davon hören <span aria-hidden="true">→</span></a></p>
+      </div>
+    </li>
+    <li class="ziel" data-gipfel="2" data-dev-sagt="Der hier könnte deiner sein!">
+      <span class="ziel-fahne frei"></span>
+      <div>
+        <p class="mono">Gipfel 03 · noch frei</p>
         <h3>Deine Idee</h3>
-        <p>Dir fehlt eine App, die eine Sache richtig gut macht? Die Fahne ist noch frei.</p>
-        <a class="mehr" href="#gipfelbuch" data-idee>Idee ins Gipfelbuch <span aria-hidden="true">→</span></a>
-      </li>
-    </ol>
-  </div>
+        <p>Dir fehlt eine App, die eine Sache richtig gut macht? Die Fahne ist noch frei. <a class="mehr" href="#gipfelbuch" data-idee>Idee ins Gipfelbuch <span aria-hidden="true">→</span></a></p>
+      </div>
+    </li>
+  </ol>
 </section>
 
 <!-- ============ 03 · Wegregeln: the trail climbs from rule to rule ============ -->
@@ -201,9 +207,9 @@
     <p>Wie Schilder am Wanderweg: kurz, klar und für jede App gleich.</p>
   </div>
 
-  <!-- One rule = one station. --n = its step on the climb. The altitude is decoration, the text is the promise. -->
+  <!-- One rule = one station, centered in its quarter. --n = its step on the climb. The altitude is decoration, the text is the promise. -->
   <div class="weg-rahmen lichtung">
-    <svg class="weg-linie" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 100 L25 66.7 L50 33.3 L75 0 L100 -12"/></svg>
+    <svg class="weg-linie" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 116.7 L12.5 100 L37.5 66.7 L62.5 33.3 L87.5 0 L100 -16.7"/></svg>
     <ol class="weg">
       <li style="--n:0" data-tiefe=".25">
         <span class="hoehe">1.200 m</span>

@@ -129,6 +129,8 @@ const zeiger = { x: 0, y: 0, an: false, zeit: -1e9, tempo: 0, weg: 0 };
 let letzteEingabe = performance.now(), scrollZeit = -1e9, scrollRichtung = 0, letztesY = scrollY, tschuessZeit = -1e9;
 const imBild = new Set(), gesagt = new Map();
 const HAKEN = '[data-dev-aufregend],[data-dev-sagt]';
+const MAENNLICH = /conrad|killian|florian|stefan|markus|yannick|viktor|jonas|ralf|klaus|hans|eddy|reed|rocko|grandpa|\bflo\b|männlich|male/i; // reading voice, see vorlesen()
+if ('speechSynthesis' in window) speechSynthesis.getVoices(); // Chrome loads its voices only when first asked
 
 // who speaks: the first Dev in view, else an active companion.
 // Measured right now, because the IntersectionObserver reports a frame late after a jump scroll.
@@ -325,7 +327,13 @@ class DevFigur extends HTMLElement {
     };
     if (mitStimme) {
       const u = new SpeechSynthesisUtterance(woerter.join(' ').replace(/ …$/, ''));
-      Object.assign(u, { lang: document.documentElement.lang || 'de', pitch: 1.6, rate: 1.05 }); // a small mountain has a high voice
+      // a male voice where the system has one (Windows: Stefan, Edge: Conrad, Killian, Florian; Mac: Eddy, Reed, Rocko, Markus, Yannick),
+      // the natural sounding ones first; otherwise the default voice pitched down
+      const lang = document.documentElement.lang || 'de';
+      const maenner = speechSynthesis.getVoices().filter(v => v.lang.startsWith(lang) && MAENNLICH.test(v.name) && !/female|weiblich/i.test(v.name));
+      const stimme = maenner.find(v => /natural|online|premium|enhanced|erweitert/i.test(v.name)) ?? maenner[0];
+      Object.assign(u, { lang, pitch: stimme ? .95 : .55, rate: 1 });
+      if (stimme) u.voice = stimme;
       u.onboundary = e => { if (e.name !== 'word' || this.stimme !== u) return; takt = 'stimme'; clearTimeout(this.leseT); zeige(Math.max(0, anfang.findLastIndex(a => a <= e.charIndex))); };
       u.onend = u.onerror = () => {
         if (this.stimme !== u) return;

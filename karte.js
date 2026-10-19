@@ -78,10 +78,11 @@ const meter = h => Math.max(0, Math.round(700 + h * 3400));
 /* ---------- state shared by map, peaks and altimeter ---------- */
 const held = $('.held'), heldText = $('.held-text'), marken = $('.gipfel-marken');
 const hm = $('.hoehenmesser'), hmWert = $('.hm-wert'), canvas = $('.karte');
-const GIPFEL_HOEHE = .62, GIPFEL_RADIUS = 80, MAX_GIPFEL = 3; // older peaks sink back into the map
+const GIPFEL_HOEHE = .62, GIPFEL_RADIUS = 80, MAX_GIPFEL = 3, LEBENSDAUER = 12000; // older peaks sink back into the map, every peak after 12 s
 let gipfel = [], gipfelZahl = 0, welle = null;
 const S = { zeit: 0, scroll: 0, zoom: 1, mass: 360, mitteX: 0, mitteY: 0, dev: [0, 0, 1], ziel: [0, -9999, 1], held: null };
 const zielTitel = $('#buch-titel');
+const AUFTAKT = html.classList.contains('auftakt-an') ? 1.6 : .2; // the map spreads from Dev when he lands after the opening (seiten.js)
 
 function hoeheBei(x, y) {
   const px = (x - S.mitteX) / (S.mass * S.zoom) + 3.1, py = (y - S.mitteY) / (S.mass * S.zoom) + 1.7 + S.scroll * .35 / S.mass;
@@ -90,7 +91,7 @@ function hoeheBei(x, y) {
   h += 1.05 * glocke(x - S.dev[0], y - S.dev[1], S.dev[2]);
   h += .95 * glocke(x - S.ziel[0], y - S.ziel[1], S.ziel[2]);
   h += .25 * zeiger.staerke * glocke(x - zeiger.x, y - zeiger.y, 120);
-  for (const g of gipfel) h += g.jetzt * glocke(x - S.held.left - g.x, y - S.held.top - g.y, GIPFEL_RADIUS);
+  if (S.held) for (const g of gipfel) h += g.jetzt * glocke(x - S.held.left - g.x, y - S.held.top - g.y, GIPFEL_RADIUS); // null until the first frame
   return h;
 }
 
@@ -104,7 +105,7 @@ held.addEventListener('click', e => {
   if (e.target.closest('a, button, dev-figur, .held-text') || getSelection().toString()) return;
   const r = held.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   const lebend = gipfel.filter(g => !g.stirbt);
-  if (lebend.length >= MAX_GIPFEL) { lebend[0].stirbt = S.zeit; lebend[0].marke.classList.add('weg'); }
+  if (lebend.length >= MAX_GIPFEL) versinke(lebend[0]);
   const name = GIPFELNAMEN[gipfelZahl % GIPFELNAMEN.length];
   gipfelZahl++;
   const marke = document.createElement('div'), b = document.createElement('b'), small = document.createElement('small');
@@ -113,12 +114,22 @@ held.addEventListener('click', e => {
   small.textContent = `${meter((karte ? hoeheBei(e.clientX, e.clientY) : .8) + GIPFEL_HOEHE).toLocaleString('de-DE')} m`;
   marke.append(b, small, document.createElement('i'));
   marken.append(marke);
-  gipfel.push({ x, y, geboren: S.zeit, stirbt: 0, jetzt: 0, marke });
+  const neu = { x, y, geboren: S.zeit, stirbt: 0, jetzt: 0, marke };
+  gipfel.push(neu);
+  setTimeout(() => versinke(neu), LEBENSDAUER);
   welle = { x, y, geboren: S.zeit };
   dev.freu?.(gipfelZahl === 6 ? VIELE_GIPFEL : `Neuer Gipfel: ${name}!`);
   dev.schau?.(e.clientX, e.clientY, 1600);
   if (ruhig) einmal();
 });
+
+function versinke(g) { // the peak sinks back into the map, its label fades
+  if (g.stirbt) return;
+  g.stirbt = ruhig ? -1e9 : S.zeit || 1e-6; // calm mode: gone at the next drawing
+  g.marke.classList.add('weg');
+  setTimeout(() => g.marke.remove(), 700); // the label goes even when the map does not draw (no WebGL, tab in the background)
+  einmal();
+}
 
 /* ---------- the map: one fragment shader, contour lines of a slowly flowing terrain ---------- */
 const FS = `#extension GL_OES_standard_derivatives : enable
@@ -304,7 +315,7 @@ function starteKarte() {
     gl.uniform4fv(u.uGipfel, daten);
     gl.uniform4f(u.uWelle, welle ? S.held.left + welle.x : 0, welle ? S.held.top + welle.y : 0, alter, alter < 1.6 && !ruhig ? 1 : 0);
     gl.uniform3f(u.uLichtung, t.left + t.width / 2, t.top + t.height / 2, Math.max(t.width, t.height) * .62);
-    const auftakt = (S.zeit - .2) / 2.6; // intro wave from Dev; afterwards the whole map stays open
+    const auftakt = (S.zeit - AUFTAKT) / 2.6; // intro wave from Dev; afterwards the whole map stays open
     gl.uniform1f(u.uAuftakt, ruhig || auftakt >= 1 ? 1e6 : Math.max(0, auftakt) ** .6 * (Math.hypot(innerWidth, innerHeight) + 400));
     gl.uniform1f(u.uDimm, 1 - .5 * weich + .45 * unterwegs);
     gl.uniform1f(u.uFortschritt, Math.min(1, scrollY / Math.max(1, html.scrollHeight - innerHeight)));
