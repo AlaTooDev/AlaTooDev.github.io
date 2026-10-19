@@ -2,7 +2,7 @@
 
 /* ---------- texts you may want to change ---------- */
 const SAETZE = ['Ich bin ein Berg. Ein kleiner.', 'Mein Hut heißt Kalpak. Tipp mal drauf!', 'Psst … Peaked kommt bald.', 'Deine Daten? Bleiben bei dir.', 'Klick mal auf die Karte!'];
-const GIPFELNAMEN = ['Kaffeespitze', 'Brotzeitberg', 'Aussichtshorn', 'Sonnenkopf', 'Wolkenzahn', 'Pausenkogel', 'Gipfelglück', 'Wanderwunder'];
+const GIPFELNAMEN = ['Mount Muskelkater', 'Schnaufkogel', 'Blasenpflasterjoch', 'Kaiserschmarrnspitze', 'Selfiehorn', 'Akku-leer-Kopf', 'Fast-oben-Spitze', 'Puls-180-Grat', 'Mount Müsliriegel', 'Wadenbeißer', 'Hüttenkäsehorn', 'Mount Everest (gefühlt)'];
 const VIELE_GIPFEL = 'Du baust Gipfel schneller als ich Apps!';
 
 const html = document.documentElement;
@@ -84,12 +84,12 @@ const glocke = (dx, dy, r) => Math.exp(-(dx * dx + dy * dy) / (r * r));
 const meter = h => Math.max(0, Math.round(700 + h * 3400));
 
 /* ---------- state shared by map, peaks and altimeter ---------- */
-const held = $('.held'), heldText = $('.held-text'), legende = $('.legende'), marken = $('.gipfel-marken');
+const held = $('.held'), heldText = $('.held-text'), marken = $('.gipfel-marken');
 const hm = $('.hoehenmesser'), hmWert = $('.hm-wert'), canvas = $('.karte');
-const GIPFEL_HOEHE = .62, GIPFEL_RADIUS = 80, MAX_GIPFEL = 6;
+const GIPFEL_HOEHE = .62, GIPFEL_RADIUS = 80, MAX_GIPFEL = 3; // older peaks sink back into the map
 let gipfel = [], gipfelZahl = 0, welle = null;
 const S = { zeit: 0, scroll: 0, zoom: 1, mass: 360, mitteX: 0, mitteY: 0, dev: [0, 0, 1], ziel: [0, -9999, 1], held: null };
-const zielTitel = $('#kontakt-titel');
+const zielTitel = $('#buch-titel');
 
 function hoeheBei(x, y) {
   const px = (x - S.mitteX) / (S.mass * S.zoom) + 3.1, py = (y - S.mitteY) / (S.mass * S.zoom) + 1.7 + S.scroll * .35 / S.mass;
@@ -109,7 +109,7 @@ const wachse = s => { // easeOutBack over 1.1 s
   return 1 + 2.70158 * x * x * x + 1.70158 * x * x;
 };
 held.addEventListener('click', e => {
-  if (e.target.closest('a, button, dev-figur, .held-text, .legende') || getSelection().toString()) return;
+  if (e.target.closest('a, button, dev-figur, .held-text') || getSelection().toString()) return;
   const r = held.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   const lebend = gipfel.filter(g => !g.stirbt);
   if (lebend.length >= MAX_GIPFEL) { lebend[0].stirbt = S.zeit; lebend[0].marke.classList.add('weg'); }
@@ -123,7 +123,7 @@ held.addEventListener('click', e => {
   marken.append(marke);
   gipfel.push({ x, y, geboren: S.zeit, stirbt: 0, jetzt: 0, marke });
   welle = { x, y, geboren: S.zeit };
-  dev.freu?.(gipfelZahl === MAX_GIPFEL ? VIELE_GIPFEL : `Neuer Gipfel: ${name}!`);
+  dev.freu?.(gipfelZahl === 6 ? VIELE_GIPFEL : `Neuer Gipfel: ${name}!`);
   dev.schau?.(e.clientX, e.clientY, 1600);
   if (ruhig) einmal();
 });
@@ -253,9 +253,9 @@ function starteKarte() {
   new MutationObserver(() => { leseFarben(); einmal(); }).observe(html, { attributes: true, attributeFilter: ['data-theme'] }); // explicit theme choice (e.g. in the Claude app)
 
   // resolution: capped pixel ratio, lowered further if the device struggles
-  let qualitaet = 1, proben = [];
+  let qualitaet = 1, proben = [], heldSichtbar = true;
   const groesse = () => {
-    const dpr = Math.min(devicePixelRatio || 1, feinZeiger ? 1.5 : 1.25) * qualitaet;
+    const dpr = Math.min(devicePixelRatio || 1, feinZeiger ? 1.5 : 1.25) * qualitaet * (heldSichtbar ? 1 : .7); // lines are dimmed down there anyway
     const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
   };
@@ -273,6 +273,7 @@ function starteKarte() {
   const daten = new Float32Array(32), start = performance.now();
   let erstesBild = false;
   function zeichne(jetztMs) {
+    groesse();
     S.zeit = ruhig ? 0 : (jetztMs - start) / 1000;
     const glaetten = ruhig ? 1 : .16;
     zeiger.x += (ziel.x - zeiger.x) * glaetten; zeiger.y += (ziel.y - zeiger.y) * glaetten;
@@ -326,16 +327,19 @@ function starteKarte() {
     }
     if (!erstesBild) { erstesBild = true; html.classList.add('karte-an'); }
   }
-  const imText = (x, y) => [heldText, legende, dev].some(el => { const b = el.getBoundingClientRect(); return x > b.left && x < b.right && y > b.top && y < b.bottom; });
+  const imText = (x, y) => [heldText, dev].some(el => { const b = el.getBoundingClientRect(); return x > b.left && x < b.right && y > b.top && y < b.bottom; });
 
-  // drawing loop: full speed while the hero is in view, ~20 fps behind the other sections
-  let heldSichtbar = true, letzte = 0, raf = 0, geplant = false;
+  // drawing loop: full speed while the hero is in view or the page scrolls (the map moves with it,
+  // 20 fps there looked like lag), ~20 fps while resting behind the other sections
+  let letzte = 0, raf = 0, geplant = false, scrollBis = 0, warVoll = false;
   new IntersectionObserver(([e]) => { heldSichtbar = e.isIntersecting; }).observe(held);
+  addEventListener('scroll', () => { scrollBis = performance.now() + 300; }, { passive: true });
   function schleife(jetzt) {
     raf = requestAnimationFrame(schleife);
-    if (!heldSichtbar && jetzt - letzte < 45) return;
-    if (heldSichtbar) messeTempo(jetzt - letzte);
-    letzte = jetzt;
+    const voll = heldSichtbar || jetzt < scrollBis;
+    if (!voll && jetzt - letzte < 45) return;
+    if (voll && warVoll) messeTempo(jetzt - letzte); // only full-rate frame gaps say something about speed
+    warVoll = voll; letzte = jetzt;
     zeichne(jetzt);
   }
   function einmal() { // calm mode: draw only when something changes

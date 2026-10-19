@@ -1,25 +1,38 @@
-/* AlaTooDev "Höhenlinien": a living contour map, Dev on his summit. */
+/* alatoo.dev "Höhenlinien": a living contour map, Dev on his summit. */
 
 @font-face { font-family: 'Baloo 2'; src: url(assets/baloo2-800.woff) format('woff'); font-weight: 800; font-display: swap; }
 @font-face { font-family: 'Cormorant'; src: url(assets/cormorant-600-italic.woff2) format('woff2'); font-weight: 600; font-style: italic; font-display: swap; }
 @font-face { font-family: 'Cormorant'; src: url(assets/cormorant-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
 
-/* ---------- colors: change here, the map (karte.js) reads the --karte-* values too ---------- */
+/* ---------- colors: change here, the map (karte.js) reads the --karte-* values too ----------
+   Contrast (WCAG): text tokens are at least 4.5:1 on --grund and on white; buttons use --knopf, not --blau. */
 :root {
-  --grund: #F3F7F5;
-  --grund-2: #DFEFE8;
-  --flaeche: rgba(255, 255, 255, .78);
+  --grund: #EAF2EE;
+  --grund-2: #D8E9E1;
+  --flaeche: rgba(255, 255, 255, .94);
   --flaeche-fest: #FFFFFF;
-  --rand: rgba(22, 131, 108, .17);
+  --rand: rgba(14, 80, 66, .22);
   --text: #1A1A2E;
-  --leise: #465A52;
-  --blau: #22A68A;
-  --blau-text: #16836C;
+  --leise: #3F524A;
+  --blau: #22A68A;           /* Jade for shapes and fills, never for small text */
+  --blau-text: #0E6F5C;      /* Jade for text: 5.5:1 on --grund */
+  --knopf: #12735F;          /* button background, white text 5.8:1 */
+  --knopf-hover: #0E6F5C;
+  --knopf-text: #FFFFFF;
   --wange: #FF8FB1;
   --wange-text: #B42357;
-  --schatten: 0 30px 70px -40px rgba(26, 26, 46, .35);
-  --karte-grund: #F3F7F5;
-  --karte-linie: #22A68A;
+  --fokus: #B42357;
+  --schatten: 0 30px 70px -40px rgba(26, 26, 46, .4);
+  /* the guestbook is paper in both themes */
+  --papier: #FBF8F0;
+  --papier-2: #F2ECDD;
+  --tinte: #1A1A2E;
+  --tinte-leise: #5B5446;
+  --papier-linie: rgba(91, 84, 70, .28);
+  --einband: #16836C;
+  --nebel: #FFFFFF;
+  --karte-grund: #EAF2EE;
+  --karte-linie: #16836C;
   --karte-warm: #E0457B;
   --karte-dunkel: 0;
 
@@ -33,14 +46,22 @@
   :root {
     --grund: #07120F;
     --grund-2: #103229;
-    --flaeche: rgba(12, 30, 26, .74);
+    --flaeche: rgba(12, 30, 26, .9);
     --flaeche-fest: #0E1E1A;
-    --rand: rgba(95, 208, 181, .2);
+    --rand: rgba(95, 208, 181, .24);
     --text: #F4F6FA;
-    --leise: #A2BDB3;
+    --leise: #B4CBC2;
     --blau-text: #5FD0B5;
+    --knopf: #5FD0B5;
+    --knopf-hover: #7FDCC5;
+    --knopf-text: #07120F;
     --wange-text: #FF8FB1;
+    --fokus: #FF8FB1;
     --schatten: 0 40px 90px -40px rgba(0, 0, 0, .7);
+    --papier: #EFE9DA;
+    --papier-2: #E2DAC6;
+    --einband: #103229;
+    --nebel: #3D5A51;
     --karte-grund: #07120F;
     --karte-linie: #5FD0B5;
     --karte-warm: #FF8FB1;
@@ -54,7 +75,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 96px; }
 body {
   margin: 0; overflow-x: hidden;
   background: radial-gradient(1100px 760px at 72% 38%, var(--grund-2), var(--grund) 72%) var(--grund);
-  color: var(--text); font: 400 1.0625rem/1.6 var(--sans);
+  color: var(--text); font: 400 1.0625rem/1.65 var(--sans);
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 /* poster: CSS contour rings until the WebGL map is ready (and for good if it never is) */
@@ -72,39 +93,38 @@ main, .fuss { position: relative; z-index: 1; }
 img { max-width: 100%; }
 a { color: inherit; }
 em { font-family: var(--serif); font-style: italic; font-weight: 600; }
+:focus-visible { outline: 3px solid var(--fokus); outline-offset: 3px; border-radius: 4px; }
+.sprung { position: absolute; z-index: 50; left: 16px; top: -80px; padding: 12px 18px; border-radius: 12px; background: var(--text); color: var(--grund); font-weight: 700; text-decoration: none; }
+.sprung:focus { top: calc(12px + env(safe-area-inset-top, 0px)); }
 
 /* ---------- header ---------- */
 .kopf {
   position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: 50%; translate: -50% 0; width: min(1240px, calc(100% - 24px));
   display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 18px; border-radius: 999px;
-  background: var(--flaeche); border: 1px solid var(--rand);
+  background: var(--flaeche); border: 1px solid var(--rand); box-shadow: 0 10px 30px -20px rgba(26, 26, 46, .45);
   -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
 .marke { display: flex; margin-right: auto; border-radius: 8px; }
 .marke img { display: block; height: 32px; width: auto; }
 .menue { display: flex; gap: 2px; }
-.menue a { padding: 11px 14px; border-radius: 999px; text-decoration: none; font: 600 .9375rem/1 var(--sans); }
+.menue a { padding: 12px 14px; border-radius: 999px; text-decoration: none; font: 600 .9375rem/1 var(--sans); }
 .menue a:hover { background: var(--rand); }
 
 /* ---------- buttons ---------- */
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px;
-  border: 1px solid transparent; border-radius: 999px; background: var(--blau); color: #fff;
+  border: 1px solid transparent; border-radius: 999px; background: var(--knopf); color: var(--knopf-text);
   font: 700 1rem/1 var(--sans); text-decoration: none; white-space: nowrap;
-  box-shadow: 0 14px 30px -14px rgba(34, 166, 138, .9), inset 0 1px 0 rgba(255, 255, 255, .25);
+  box-shadow: 0 14px 30px -14px rgba(18, 115, 95, .9), inset 0 1px 0 rgba(255, 255, 255, .25);
   transition: transform .25s cubic-bezier(.3, 1.4, .5, 1), background .2s, box-shadow .25s;
 }
-.knopf:hover { transform: translateY(-2px); background: #2DB898; box-shadow: 0 20px 36px -14px rgba(34, 166, 138, .95), inset 0 1px 0 rgba(255, 255, 255, .25); }
-.knopf.leise { background: var(--flaeche); color: var(--text); border-color: var(--rand); box-shadow: none; }
-.knopf.leise:hover { border-color: var(--blau-text); }
+.knopf:hover { transform: translateY(-2px); background: var(--knopf-hover); }
 .knopf.klein { min-height: 44px; padding: 0 18px; font-size: .9375rem; }
-.knopf.gross { min-height: 66px; padding: 0 32px; font-size: 1.125rem; }
 .knopf svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-:focus-visible { outline: 3px solid var(--wange); outline-offset: 3px; }
 
 /* ---------- hero ---------- */
 .held {
-  position: relative; width: var(--breite); min-height: 100svh; margin: 0 auto; padding: 132px 0 132px;
+  position: relative; width: var(--breite); min-height: 100svh; margin: 0 auto; padding: 132px 0 96px;
   display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); align-items: center; gap: 24px;
   cursor: crosshair;
 }
@@ -113,9 +133,9 @@ em { font-family: var(--serif); font-style: italic; font-weight: 600; }
 .etikett {
   display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 10px 15px; border-radius: 999px;
   background: var(--flaeche); border: 1px solid var(--rand);
-  font: 600 .75rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--blau-text);
+  font: 600 .78rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--blau-text);
 }
-.punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--wange); box-shadow: 0 0 0 0 rgba(255, 143, 177, .6); animation: puls 2.6s infinite; }
+.punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--wange-text); box-shadow: 0 0 0 0 rgba(255, 143, 177, .6); animation: puls 2.6s infinite; }
 @keyframes puls { 70% { box-shadow: 0 0 0 9px rgba(255, 143, 177, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 143, 177, 0); } }
 
 h1 { margin: 26px 0 24px; font: 800 clamp(3.3rem, 8.6vw, 8rem)/.92 var(--display); letter-spacing: -.035em; }
@@ -125,8 +145,8 @@ h1 em, h2 em { font-size: 1.12em; letter-spacing: -.01em; color: var(--blau-text
 .js h1 .zeile > span { animation: steigen 1.15s cubic-bezier(.2, .8, .2, 1) both; }
 .js h1 .zeile + .zeile > span { animation-delay: .12s; }
 @keyframes steigen { from { transform: translateY(112%); } }
-.lead { max-width: 33em; margin: 0 0 34px; color: var(--leise); font-size: clamp(1.0625rem, 1.35vw, 1.22rem); }
-.knoepfe { display: flex; flex-wrap: wrap; gap: 12px; }
+/* the lead sits on the map: a soft halo of the ground color keeps it readable over the lines */
+.lead { max-width: 31em; margin: 0; color: var(--text); font-size: clamp(1.125rem, 1.4vw, 1.3rem); text-shadow: 0 0 18px var(--grund), 0 0 6px var(--grund); }
 
 .gipfel { position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; min-height: 440px; }
 .gebirge {
@@ -138,45 +158,23 @@ h1 em, h2 em { font-size: 1.12em; letter-spacing: -.01em; color: var(--blau-text
 dev-figur { display: block; aspect-ratio: 1; --dev-blase: var(--text); --dev-blase-text: var(--grund); --dev-schrift: 700 .95rem/1.3 var(--sans); }
 dev-figur > svg, dev-figur > img { display: block; width: 100%; height: 100%; }
 .dev { position: relative; z-index: 2; width: clamp(160px, 17vw, 236px); margin-top: 56px; --dev-schatten: drop-shadow(0 24px 24px rgba(5, 18, 14, .35)); }
-.gipfel-name { position: relative; z-index: 2; margin: 16px 0 0; display: grid; justify-items: center; gap: 7px; }
-.gipfel-name em { font-size: 1.4rem; line-height: 1; }
-.gipfel-name span, .mono {
-  margin: 0; font: 600 .7rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--leise);
-}
-
-.tipp { position: absolute; left: 0; bottom: 40px; z-index: 2; margin: 0; display: flex; align-items: center; gap: 12px; font: 500 .8rem/1.4 var(--mono); color: var(--leise); }
-.ring { position: relative; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--wange-text); }
-.ring::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--wange-text); animation: welle 2.4s ease-out infinite; }
-@keyframes welle { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.7); opacity: 0; } }
-.tipp-finger { display: none; }
-@media (pointer: coarse) { .tipp-maus { display: none; } .tipp-finger { display: inline; } }
-
-.legende {
-  position: absolute; right: 0; bottom: 30px; z-index: 2; padding: 16px 18px 18px; border-radius: 18px; cursor: auto;
-  background: var(--flaeche); border: 1px solid var(--rand); font: 500 .75rem/1 var(--mono); color: var(--leise);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-}
-.legende p { margin: 0 0 13px; font: italic 600 1.1rem/1 var(--serif); color: var(--text); }
-.legende ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.legende li { display: flex; align-items: center; gap: 10px; }
-.l-linie { width: 26px; border-top: 1px solid var(--blau-text); }
-.l-linie.dick { border-top-width: 2.5px; }
-.l-gipfel { width: 0; margin: 0 7px; border: 6px solid transparent; border-top: 0; border-bottom: 10px solid var(--wange); }
-.l-du { width: 14px; height: 14px; margin: 0 6px; border-radius: 50%; border: 1.5px solid var(--text); }
+.gipfel-name { position: relative; z-index: 2; margin: 16px 0 0; }
+.gipfel-name em { font-size: clamp(1.5rem, 2vw, 1.9rem); line-height: 1; text-shadow: 0 0 14px var(--grund); }
+.mono { margin: 0; font: 600 .78rem/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--leise); }
 
 /* labels of the peaks a visitor sets (positioned by karte.js) */
 .gipfel-marken { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .gm { position: absolute; display: grid; justify-items: center; gap: 5px; translate: -50% -100%; animation: auftauchen .7s cubic-bezier(.3, 1.5, .5, 1) both; }
-.gm b { font: italic 600 1.2rem/1 var(--serif); white-space: nowrap; text-shadow: 0 0 14px var(--grund), 0 0 4px var(--grund); }
-.gm small { font: 600 .66rem/1 var(--mono); letter-spacing: .08em; color: var(--leise); text-shadow: 0 0 8px var(--grund); }
-.gm i { width: 0; border: 6px solid transparent; border-top: 0; border-bottom: 10px solid var(--wange); }
+.gm b { font: italic 600 1.25rem/1 var(--serif); white-space: nowrap; text-shadow: 0 0 14px var(--grund), 0 0 4px var(--grund), 0 0 2px var(--grund); }
+.gm small { font: 600 .72rem/1 var(--mono); letter-spacing: .08em; color: var(--leise); text-shadow: 0 0 8px var(--grund), 0 0 2px var(--grund); }
+.gm i { width: 0; border: 6px solid transparent; border-top: 0; border-bottom: 10px solid var(--wange-text); }
 .gm.weg { animation: verschwinden .6s ease forwards; }
 @keyframes auftauchen { from { opacity: 0; transform: translateY(14px) scale(.8); } }
 @keyframes verschwinden { to { opacity: 0; transform: translateY(-10px); } }
 
 .hoehenmesser {
   position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; padding: 7px 11px; border-radius: 999px;
-  background: var(--text); color: var(--grund); font: 600 .72rem/1 var(--mono); white-space: nowrap;
+  background: var(--text); color: var(--grund); font: 600 .75rem/1 var(--mono); white-space: nowrap;
   opacity: 0; transition: opacity .2s; will-change: transform;
 }
 .hoehenmesser::before { content: '▲ '; color: var(--wange); }
@@ -184,15 +182,17 @@ dev-figur > svg, dev-figur > img { display: block; width: 100%; height: 100%; }
 
 /* ---------- sections ---------- */
 .abschnitt { width: var(--breite); margin: 0 auto; padding-top: clamp(96px, 13vw, 180px); }
-.abschnitt-kopf { display: grid; gap: 18px; max-width: 760px; margin-bottom: clamp(32px, 4vw, 56px); }
-.abschnitt-kopf p:not(.nummer) { margin: 0; max-width: 36em; color: var(--leise); font-size: 1.125rem; }
+.abschnitt-kopf { display: grid; gap: 18px; max-width: 760px; margin-bottom: clamp(36px, 4.5vw, 64px); }
+.abschnitt-kopf p:not(.nummer) { margin: 0; max-width: 36em; color: var(--leise); font-size: 1.15rem; }
+.abschnitt-kopf.mitte { justify-items: center; margin-inline: auto; text-align: center; }
 h2 { margin: 0; font: 800 clamp(2.6rem, 6vw, 5rem)/.98 var(--display); letter-spacing: -.03em; text-wrap: balance; }
-.nummer { margin: 0; display: flex; align-items: center; gap: 14px; font: 600 .78rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--blau-text); }
-.nummer::after { content: ''; flex: 0 0 72px; height: 1px; background: currentColor; opacity: .45; }
+.nummer { margin: 0; display: flex; align-items: center; gap: 14px; font: 700 .8rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--blau-text); }
+.nummer::after { content: ''; flex: 0 0 72px; height: 1.5px; background: currentColor; opacity: .5; }
+.mitte .nummer::before { content: ''; flex: 0 0 72px; height: 1.5px; background: currentColor; opacity: .5; }
 
 .box {
   position: relative; isolation: isolate; overflow: hidden; padding: clamp(26px, 3vw, 40px); border-radius: 28px;
-  background: var(--flaeche); border: 1px solid var(--rand); box-shadow: var(--schatten);
+  background: var(--flaeche-fest); border: 1px solid var(--rand); box-shadow: var(--schatten);
 }
 .box::before { /* echo of the map: contour rings in the corner */
   content: ''; position: absolute; z-index: -1; right: -150px; bottom: -170px; width: 440px; aspect-ratio: 1; border-radius: 50%;
@@ -204,24 +204,23 @@ h2 { margin: 0; font: 800 clamp(2.6rem, 6vw, 5rem)/.98 var(--display); letter-sp
 .box h3 { margin: 0; font: 800 clamp(1.65rem, 2.4vw, 2.05rem)/1.08 var(--display); letter-spacing: -.02em; }
 .box p { color: var(--leise); }
 .box .mono { color: var(--blau-text); }
-.mehr { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1.5px solid var(--rand); font-weight: 700; text-decoration: none; }
-.mehr:hover { border-color: currentColor; }
+.mehr { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 2px solid var(--blau-text); color: var(--blau-text); font-weight: 700; text-decoration: none; }
+.mehr:hover { color: var(--text); border-color: var(--text); }
 .mehr span { transition: transform .25s; }
 .mehr:hover span { transform: translateX(4px); }
 
-/* apps */
-.apps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.peaked { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: clamp(28px, 4.5vw, 64px); }
+/* ---------- 01 apps: Peaked ---------- */
+.peaked { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: clamp(28px, 4.5vw, 64px); }
 .app-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
 .app-kopf img { width: 56px; height: 56px; border-radius: 15px; box-shadow: 0 10px 24px -10px rgba(5, 18, 14, .5); }
-.chip { margin-left: auto; padding: 8px 12px; border-radius: 999px; border: 1px solid currentColor; font: 600 .72rem/1 var(--mono); letter-spacing: .04em; color: var(--wange-text); }
+.chip { margin-left: auto; padding: 8px 12px; border-radius: 999px; border: 1.5px solid currentColor; font: 700 .75rem/1 var(--mono); letter-spacing: .04em; color: var(--wange-text); }
 .peaked h3 { font-size: clamp(3rem, 6vw, 5.2rem); line-height: .95; letter-spacing: -.035em; }
 .claim { margin: 6px 0 18px; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.1; }
 .claim em { color: var(--blau-text); }
 .fakten { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding: 0; list-style: none; }
-.fakten li { padding: 9px 13px; border-radius: 999px; border: 1px solid var(--rand); font: 600 .75rem/1 var(--mono); }
-.fakten li.stark { background: var(--blau); border-color: transparent; color: #fff; }
-blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 2px solid var(--wange); font: italic 600 clamp(1.3rem, 1.9vw, 1.55rem)/1.28 var(--serif); }
+.fakten li { padding: 9px 13px; border-radius: 999px; border: 1px solid var(--rand); font: 600 .78rem/1 var(--mono); }
+.fakten li.stark { background: var(--knopf); border-color: transparent; color: var(--knopf-text); }
+blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var(--wange-text); font: italic 600 clamp(1.3rem, 1.9vw, 1.55rem)/1.28 var(--serif); }
 .handy {
   position: relative; justify-self: center; width: min(290px, 100%); aspect-ratio: 405 / 720; padding: 9px; border-radius: 42px;
   background: #08110F; box-shadow: 0 60px 90px -45px rgba(5, 18, 14, .85), inset 0 0 0 1px rgba(255, 255, 255, .12);
@@ -231,58 +230,146 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 2px solid var
 .handy img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 34px; }
 .handy::after { content: ''; position: absolute; inset: 9px; border-radius: 34px; pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, .22), transparent 38%); }
 
-.nebelbild, .ideenbild { position: relative; height: 176px; margin: -8px -8px 24px; border-radius: 20px; overflow: hidden; }
-.nebelbild { background: repeating-radial-gradient(circle at 50% 80%, transparent 0 11px, var(--rand) 11px 12.5px), var(--flaeche-fest); }
-.nebelbild span { position: absolute; inset: 0; display: grid; place-items: center; font: italic 600 5rem/1 var(--serif); color: var(--blau-text); }
-.nebelbild::after { content: ''; position: absolute; inset: 0 -40%; background: linear-gradient(100deg, transparent 18%, var(--flaeche-fest) 44%, transparent 70%); opacity: .8; animation: schwaden 8s ease-in-out infinite alternate; }
-@keyframes schwaden { from { transform: translateX(-28%); } to { transform: translateX(28%); } }
-.ideenbild { display: grid; place-items: center; border: 1.5px dashed var(--rand); background: radial-gradient(circle, rgba(255, 143, 177, .14), transparent 62%); }
-.ideenbild span { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 1.5px dashed var(--wange-text); animation: drehen 18s linear infinite; }
-.ideenbild span::before, .ideenbild span::after { content: ''; position: absolute; left: 50%; top: 50%; width: 22px; height: 2px; border-radius: 2px; background: var(--wange-text); translate: -50% -50%; }
-.ideenbild span::after { rotate: 90deg; }
-@keyframes drehen { to { transform: rotate(360deg); } }
+/* ---------- 01 apps: future peaks on a summit panorama board ---------- */
+.panorama { margin-top: clamp(64px, 8vw, 110px); }
+.panorama-titel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 clamp(28px, 3.5vw, 44px); font: italic 600 clamp(1.6rem, 2.6vw, 2.2rem)/1.1 var(--serif); }
+.panorama-titel .mono { color: var(--blau-text); }
+.horizont { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 0; list-style: none; }
+.horizont li { position: relative; display: grid; align-content: start; justify-items: center; gap: 10px; padding: 0 6px 76px; text-align: center; }
+.horizont li::after { /* leader line down to the peak, continued in the SVG */
+  content: ''; position: absolute; left: 50%; bottom: 0; height: 60px; border-left: 2px dotted var(--blau-text);
+}
+.horizont h3 { margin: 0; font: 800 clamp(1.6rem, 2.4vw, 2.1rem)/1.05 var(--display); letter-spacing: -.02em; }
+.horizont p:not(.mono) { margin: 0; max-width: 26em; color: var(--leise); }
+.horizont .mono { color: var(--blau-text); }
+.horizont .mehr { margin-top: 6px; }
+.kamm { display: block; width: 100%; height: clamp(120px, 15vw, 200px); overflow: visible; }
+.kamm-fern { fill: var(--grund-2); }
+.kamm-nah { fill: var(--grund-2); }
+.kamm-linie { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.kamm-zeiger { fill: none; stroke: var(--blau-text); stroke-width: 2; stroke-dasharray: 2 4; vector-effect: non-scaling-stroke; }
+.nebel ellipse { fill: var(--nebel); opacity: .95; transform-box: fill-box; animation: treiben 11s ease-in-out infinite alternate; }
+.nebel ellipse:nth-child(2) { opacity: .55; animation-duration: 14s; animation-direction: alternate-reverse; }
+.nebel ellipse:nth-child(3) { animation-duration: 17s; }
+@keyframes treiben { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
 
-/* promises */
-.regeln { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.regel { display: flex; flex-direction: column; gap: 14px; min-height: 290px; }
-.regel .nr { position: absolute; top: 30px; right: 32px; font: 600 .78rem/1 var(--mono); letter-spacing: .1em; color: var(--leise); }
-.regel .icon { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: auto; border-radius: 18px; background: rgba(34, 166, 138, .14); color: var(--blau-text); }
-.regel .icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.regel h3 { margin-top: 28px; }
-.regel p { margin: 0; }
-.regel.blau { background: var(--blau); border-color: transparent; color: #fff; }
-.regel.blau p, .regel.blau .nr { color: rgba(255, 255, 255, .93); }
-.regel.blau .icon { background: rgba(255, 255, 255, .16); color: #fff; }
-.regel.blau::before { background: repeating-radial-gradient(circle, transparent 0 16px, rgba(255, 255, 255, .2) 16px 17.5px); }
+/* ---------- 02 trail rules: one station per rule, no boxes (index list idea from Aura's "Atlas Brut") ---------- */
+.weg { position: relative; margin: 0; padding: 0; list-style: none; counter-reset: regel; }
+.weg::before { /* the trail */
+  content: ''; position: absolute; left: 11px; top: 40px; bottom: 40px; border-left: 2px dashed var(--blau-text); opacity: .55;
+}
+.weg li {
+  position: relative; counter-increment: regel; display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 8px clamp(24px, 5vw, 80px);
+  padding: clamp(30px, 4vw, 52px) 0 clamp(30px, 4vw, 52px) 52px;
+}
+.weg li + li::after { /* a contour line between the stations */
+  content: ''; position: absolute; left: 52px; right: 0; top: -6px; height: 12px; background: var(--rand);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12'%3E%3Cpath d='M0 6 Q20 0 40 6 T80 6 T120 6 T160 6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left center / 160px 12px;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12'%3E%3Cpath d='M0 6 Q20 0 40 6 T80 6 T120 6 T160 6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left center / 160px 12px;
+}
+.weg li::before { /* waypoint on the trail */
+  content: ''; position: absolute; left: 0; top: calc(clamp(30px, 4vw, 52px) + 14px); width: 24px; height: 24px; border-radius: 50%;
+  background: var(--grund); border: 3px solid var(--blau-text); transition: background .3s, border-color .3s, transform .4s cubic-bezier(.3, 1.6, .5, 1);
+}
+.weg li:hover::before { background: var(--wange); border-color: var(--wange-text); transform: scale(1.2); }
+.hoehe { display: grid; align-content: start; gap: 6px; font: 700 .85rem/1 var(--mono); letter-spacing: .08em; color: var(--blau-text); }
+.hoehe::before { content: counter(regel, decimal-leading-zero); font: 800 clamp(3.4rem, 6vw, 5.4rem)/.85 var(--display); letter-spacing: -.04em; color: var(--text); }
+.weg h3 { margin: 0 0 14px; font: 800 clamp(1.9rem, 3.6vw, 3.1rem)/1.02 var(--display); letter-spacing: -.025em; text-wrap: balance; transition: color .3s; }
+.weg li:hover h3 { color: var(--blau-text); }
+.weg p { margin: 0; max-width: 34em; color: var(--leise); font-size: 1.125rem; }
 
-/* about */
-.ueber { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); align-items: end; gap: clamp(24px, 5vw, 72px); }
+/* ---------- 03 about me ---------- */
+.ueber { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); align-items: center; gap: clamp(32px, 6vw, 88px); }
 .ueber .abschnitt-kopf { margin-bottom: 0; }
-.steckbrief-kopf { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-.steckbrief-kopf img { width: 64px; height: 64px; border-radius: 17px; }
-.steckbrief-kopf p { display: grid; gap: 8px; margin: 0; }
-.steckbrief-kopf em { font-size: 2rem; line-height: 1; color: var(--text); }
-.steckbrief dl { display: grid; grid-template-columns: auto 1fr; gap: 12px 18px; margin: 0; }
-.steckbrief dt, .steckbrief dd { padding-bottom: 12px; border-bottom: 1px dashed var(--rand); }
-.steckbrief dt { font: 600 .7rem/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--leise); }
-.steckbrief dd { margin: 0; font-weight: 600; }
+.ueber .abschnitt-kopf p:not(.nummer) { color: var(--text); }
+.foto { justify-self: center; display: grid; justify-items: center; margin: 0; rotate: 2.5deg; transition: rotate .5s cubic-bezier(.3, 1.4, .5, 1); }
+.foto:hover { rotate: 0deg; }
+.foto-rahmen { /* a print with a white border, like a photo pinned to the hut wall */
+  position: relative; width: min(320px, 72vw); aspect-ratio: 1; border: 14px solid var(--papier); border-bottom-width: 64px; border-radius: 6px;
+  background: repeating-radial-gradient(circle at 50% 110%, transparent 0 14px, var(--rand) 14px 15.5px), var(--grund-2);
+  box-shadow: var(--schatten), 0 0 0 1px var(--rand);
+}
+.foto-rahmen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.foto-platzhalter { position: absolute; inset: 22%; width: 56%; height: 56%; fill: none; stroke: var(--blau-text); stroke-width: 5; stroke-linecap: round; }
+.foto figcaption { position: relative; display: grid; justify-items: center; gap: 4px; margin-top: -56px; height: 56px; align-content: center; color: var(--tinte); }
+.foto figcaption em { font-size: 1.6rem; line-height: 1; }
+.foto figcaption .mono { color: var(--tinte-leise); font-size: .72rem; }
 
-/* contact */
-.kontakt { display: grid; justify-items: center; gap: 22px; text-align: center; }
-.kontakt .nummer::before { content: ''; flex: 0 0 72px; height: 1px; background: currentColor; opacity: .45; }
-.kontakt h2 { font-size: clamp(3.4rem, 11vw, 9rem); }
-.kontakt p:not(.nummer) { margin: 0; color: var(--leise); font-size: 1.15rem; }
-.kontakt .knopf { margin-top: 10px; }
-.dev-jubel { width: clamp(96px, 9vw, 124px); margin: 10px 0 -14px; --dev-schatten: drop-shadow(0 16px 18px rgba(5, 18, 14, .35)); }
+/* ---------- 04 guestbook: an open book (idea from Meng To's "Book Serif Index" on Aura) ---------- */
+.kontakt h2 { font-size: clamp(3.4rem, 10vw, 8rem); }
+.dev-jubel { width: clamp(96px, 9vw, 124px); margin: 4px 0 -10px; --dev-schatten: drop-shadow(0 16px 18px rgba(5, 18, 14, .35)); }
+.buch {
+  position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 1100px; margin: 0 auto;
+  filter: drop-shadow(0 40px 50px rgba(5, 18, 14, .28));
+}
+.buch::before { /* the cover peeking out behind the pages */
+  content: ''; position: absolute; z-index: -1; inset: -12px -14px -16px; border-radius: 22px; background: var(--einband);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .08);
+}
+.seite {
+  position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 640px; min-width: 0;
+  padding: clamp(26px, 3.6vw, 52px); color: var(--tinte); background: var(--papier);
+  box-shadow: 0 1px 0 var(--papier-2), 0 3px 0 var(--papier-2), 0 5px 0 #d9cfb6; /* the stack of pages */
+}
+.seite.links { border-radius: 16px 4px 4px 16px; background: linear-gradient(to left, rgba(60, 45, 20, .16), transparent 10%), var(--papier); }
+.seite.rechts { border-radius: 4px 16px 16px 4px; background: linear-gradient(to right, rgba(60, 45, 20, .2), transparent 10%), var(--papier); }
+.kopfzeile { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--papier-linie); font: 600 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise); }
+.buch-titel { margin: 8px 0 4px; font: italic 600 clamp(1.9rem, 3vw, 2.5rem)/1 var(--serif); }
+.folio { margin: auto 0 0; padding-top: 12px; text-align: center; font: 500 .8rem/1 var(--serif); color: var(--tinte-leise); }
+
+.eintraege { display: grid; align-content: start; gap: 0; max-height: 470px; margin: 0; padding: 0 6px 0 0; overflow: auto; list-style: none; border-radius: 6px; scrollbar-color: var(--papier-linie) transparent; }
+.eintraege li { display: grid; gap: 6px; padding: 18px 0; border-bottom: 1px dashed var(--papier-linie); }
+.eintraege .was { margin: 0; font: italic 600 1.35rem/1.35 var(--serif); }
+.eintraege li:first-child .was::first-letter { float: left; margin: 4px 8px 0 0; font: 800 3.1rem/.8 var(--display); font-style: normal; color: var(--einband); }
+.eintraege .wer { margin: 0; font: 600 .75rem/1.4 var(--mono); letter-spacing: .06em; color: var(--tinte-leise); }
+.eintraege .leer { color: var(--tinte-leise); font-style: italic; }
+.buch-stempel { align-self: flex-end; width: 112px; margin: auto 8px -8px 0; rotate: -14deg; opacity: .7; fill: none; stroke: var(--wange-text); stroke-width: 2; }
+.buch-stempel text { fill: var(--wange-text); stroke: none; font: 700 10.5px/1 var(--mono); letter-spacing: .12em; }
+.buch-stempel + .folio { margin-top: 0; }
+.marke-idee { justify-self: start; padding: 5px 9px; border: 1.5px solid var(--wange-text); border-radius: 4px; rotate: -2deg; font: 700 .7rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--wange-text); }
+
+.eintragen .art { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 6px; padding: 0; border: 0; }
+.eintragen .art legend { width: 100%; margin-bottom: 10px; padding: 0; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
+.art label { position: relative; cursor: pointer; }
+.art input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.art span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--papier-linie); font-weight: 600; transition: background .2s, color .2s, border-color .2s; }
+.art input:checked + span { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
+.art input:focus-visible + span { outline: 3px solid var(--wange-text); outline-offset: 2px; }
+.feld { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
+.zaehler { letter-spacing: 0; }
+.eintragen input[type=text], .eintragen textarea {
+  width: 100%; padding: 8px 2px; border: 0; border-bottom: 2px solid var(--tinte-leise); border-radius: 0; background: transparent;
+  color: var(--tinte); font: 500 1.0625rem/1.5 var(--sans);
+}
+.eintragen textarea { resize: vertical; min-height: 140px; line-height: 32px; padding-top: 0; border: 0;
+  background: repeating-linear-gradient(transparent 0 31px, var(--papier-linie) 31px 32px); } /* lined paper */
+.eintragen input::placeholder { color: var(--tinte-leise); opacity: .8; }
+.eintragen input[type=text]:focus-visible, .eintragen textarea:focus-visible { outline: 3px solid var(--wange-text); outline-offset: 4px; }
+.haken { display: flex; align-items: flex-start; gap: 10px; font-size: .95rem; line-height: 1.45; cursor: pointer; }
+.haken input { flex: none; width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--einband); }
+.honig { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.absenden { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 6px; }
+.stempel { /* a rubber summit stamp */
+  min-height: 52px; padding: 0 26px; border: 3px double var(--wange-text); border-radius: 10px; background: transparent; color: var(--wange-text);
+  font: 800 1.05rem/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; rotate: -3deg;
+  transition: rotate .3s cubic-bezier(.3, 1.6, .5, 1), background .2s, color .2s;
+}
+.stempel:hover { rotate: 0deg; background: var(--wange-text); color: var(--papier); }
+.stempel:disabled { opacity: .5; cursor: wait; }
+.status { flex: 1 1 200px; margin: 0; font-size: .95rem; line-height: 1.4; }
+.status.fehler { color: var(--wange-text); font-weight: 600; }
+
+.post { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 24px; margin-top: clamp(48px, 6vw, 72px); text-align: center; }
+.post p { margin: 0; font-size: 1.125rem; }
 
 /* footer */
 .fuss {
   width: var(--breite); margin: clamp(110px, 14vw, 180px) auto 0; padding: 28px 0 44px; border-top: 1px solid var(--rand);
-  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 36px; font: 500 .8rem/1.5 var(--mono); color: var(--leise);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 36px; font: 500 .85rem/1.5 var(--mono); color: var(--leise);
 }
 .fuss img { display: block; height: 30px; width: auto; }
 .fuss nav { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-right: auto; }
-.fuss a { text-decoration: none; }
+.fuss a { padding: 8px 0; text-decoration: underline; text-decoration-color: var(--rand); text-underline-offset: 4px; }
 .fuss a:hover { color: var(--text); }
 .fuss p { margin: 0; }
 
@@ -294,26 +381,38 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 2px solid var
 /* ---------- reveal on scroll: only what starts below the screen waits (karte.js sets .wartet), so nothing in view is ever hidden ---------- */
 [data-zeige] { transition: opacity .9s ease, transform 1s cubic-bezier(.2, .8, .2, 1); }
 [data-zeige].wartet { opacity: 0; transform: translateY(34px); }
-.apps > :nth-child(2), .regeln > :nth-child(2) { transition-delay: .08s; }
-.apps > :nth-child(3), .regeln > :nth-child(3) { transition-delay: .16s; }
-.regeln > :nth-child(4) { transition-delay: .24s; }
 
 /* ---------- small screens ---------- */
 @media (max-width: 880px) {
-  .held { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 112px 0 56px; gap: 0; }
+  .held { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 112px 0 40px; gap: 0; }
   .gipfel { min-height: 0; padding: 56px 0 12px; }
   .gebirge { font-size: clamp(2.4rem, 12vw, 4.2rem); letter-spacing: .32em; text-indent: .32em; }
-  .legende { display: none; }
-  .tipp { position: static; justify-self: center; margin-top: 18px; }
-  .apps, .regeln, .peaked, .ueber { grid-template-columns: minmax(0, 1fr); }
+  .peaked, .ueber, .buch { grid-template-columns: minmax(0, 1fr); }
   .handy { width: min(250px, 80%); margin-top: 8px; }
-  .regel { min-height: 0; }
+  .horizont { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .horizont li { padding-bottom: 0; }
+  .horizont li::after, .kamm-zeiger { display: none; }
+  .kamm { margin-top: 24px; }
+  .weg li { grid-template-columns: minmax(0, 1fr); }
+  .buch { gap: 18px; }
+  .buch::before { inset: -10px; }
+  .seite { min-height: 0; }
+  .seite.links, .seite.rechts { border-radius: 14px; background: var(--papier); }
+  .eintraege { max-height: 380px; }
 }
 @media (max-width: 760px) { .menue { display: none; } }
 @media (max-width: 520px) {
   h1 { font-size: clamp(3.2rem, 16vw, 4.6rem); }
-  .knoepfe .knopf { flex: 1 1 auto; }
   .kopf .knopf.klein { padding: 0 14px; }
+  .weg li { padding-left: 44px; }
+  .weg li + li::after { left: 44px; }
+  .post .knopf { white-space: normal; text-align: center; }
+}
+
+/* ---------- more contrast when the system asks for it ---------- */
+@media (prefers-contrast: more) {
+  :root { --rand: rgba(26, 26, 46, .55); --leise: var(--text); --papier-linie: rgba(26, 26, 46, .6); }
+  .gebirge { opacity: .4; }
 }
 
 /* ---------- calm mode ---------- */
