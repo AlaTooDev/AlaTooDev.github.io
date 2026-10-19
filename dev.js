@@ -12,8 +12,8 @@
 //   data-dev-sagt="…"                   Dev says it and looks at it
 // API:     dev.sag(text, ms) · dev.freu(text) · dev.hoppla(text) · dev.schau(x, y, ms) · dev.saetze = [...] (tap sentences)
 // Style:   --dev-blase, --dev-blase-text, --dev-schrift (speech bubble), --dev-schatten (drop shadow), --dev-zzz
-// Hidden:  tap 7× quickly (dizzy), tap the hat, 20 s without input (tired, then asleep), select text (reads along),
-//          mouse leaves the window (says bye).
+// Hidden:  tap 7× quickly (dizzy), tap the hat, 20 s without input (tired, then asleep), select text (reads it
+//          out loud: word by word in his bubble, with a voice where the browser has one), mouse leaves the window (says bye).
 
 { // own block scope: pages load this as a classic script, so its names must not clash with theirs
 
@@ -98,6 +98,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; filter: var(
 :host([zustand=schlaf]) :is(.a-zu, .m-o, .zzz) { display: inline; }
 :host([zustand=huch]) .m-laecheln { display: none; }
 :host([zustand=huch]) :is(.m-o, .tropfen) { display: inline; }
+:host([zustand=liest][spricht]) .m-laecheln { display: none; }
+:host([zustand=liest][spricht]) .m-o { display: inline; }
 .funken path { transform-box: fill-box; transform-origin: center; animation: funkeln 1.1s ease-in-out infinite; animation-delay: calc(var(--i) * -.37s); }
 @keyframes funkeln { 50% { transform: scale(.4) rotate(25deg); opacity: .55; } }
 .zzz text { font: 800 10px/1 var(--dev-rund, 'Baloo 2', ui-rounded, system-ui, sans-serif); fill: var(--dev-zzz, #5FD0B5); animation: zzz 2.4s ease-in infinite both; animation-delay: calc(var(--i) * .5s); }
@@ -111,6 +113,8 @@ svg { display: block; width: 100%; height: 100%; overflow: visible; filter: var(
 }
 .blase::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 3px; background: inherit; transform: rotate(45deg); }
 .blase.zeigen { opacity: 1; transform: translate(-50%, 0); }
+.blase.liest { max-width: min(300px, 80vw); text-align: left; }
+.blase .noch { opacity: .4; }
 :host([begleiter]) .blase { left: auto; right: 0; transform: translateY(8px) scale(.94); transform-origin: 80% 100%; }
 :host([begleiter]) .blase.zeigen { transform: none; }
 :host([begleiter]) .blase::after { left: auto; right: 30px; }
@@ -132,9 +136,14 @@ const zuSehen = d => { const r = d.getBoundingClientRect(); return Math.min(r.bo
 const sprecher = () => [...alle].find(d => !d.begleiter && zuSehen(d)) || [...alle].find(d => d.begleiter && d.aktiv);
 const mitte = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
 
-function haken(el, jetzt, warten) {
+// vonSelbst: the hook just sits in the middle of the screen. Then Dev says it once per visit and keeps 15 s between
+// such remarks; before, a tall screen with three hooks in view made him hop and chatter nonstop.
+let letzteSelbst = -1e9;
+function haken(el, jetzt, vonSelbst) {
   const d = sprecher();
-  if (!d || d.zustand === 'schwindelig' || jetzt - (gesagt.get(el) ?? -1e9) < 12000 || (warten && jetzt < d.redetBis)) return;
+  if (!d || d.zustand === 'schwindelig' || d.zustand === 'liest' || jetzt < d.redetBis) return;
+  if (vonSelbst ? gesagt.has(el) || jetzt - letzteSelbst < 15000 : jetzt - (gesagt.get(el) ?? -1e9) < 12000) return;
+  if (vonSelbst) letzteSelbst = jetzt;
   gesagt.set(el, jetzt);
   if (el.dataset.devAufregend != null) d.aufregen(el, el.dataset.devAufregend);
   else { d.sag(el.dataset.devSagt, 3000); d.ueber = { el, bis: jetzt + 3000 }; }
@@ -157,11 +166,14 @@ addEventListener('pointermove', e => {
   }
   eingabe();
 }, { passive: true });
+let zeigerUnten = false, markierT = 0;
 addEventListener('pointerdown', e => {
+  zeigerUnten = true;
   // touch: Dev looks where you tap
   if (e.pointerType !== 'mouse') for (const d of alle) d.ueber = { x: e.clientX, y: e.clientY, bis: performance.now() + 1200 };
   eingabe();
 }, { passive: true });
+addEventListener('pointerup', () => { zeigerUnten = false; clearTimeout(markierT); markierT = setTimeout(markiert, 120); }, { passive: true });
 addEventListener('keydown', eingabe, { passive: true });
 addEventListener('scroll', () => {
   scrollRichtung = Math.sign(scrollY - letztesY); letztesY = scrollY; scrollZeit = performance.now(); eingabe();
@@ -180,11 +192,14 @@ document.addEventListener('mouseout', e => {
   d.schau(e.clientX, e.clientY < 20 ? -400 : e.clientY, 2000);
   d.sag('Bis bald!', 2000);
 });
-document.addEventListener('selectionchange', () => {
-  if (String(getSelection() ?? '').trim().length < 3) return;
+// selected text: Dev reads it out loud once the selection settles (mouse released, or 0.7 s quiet for keyboard and touch)
+document.addEventListener('selectionchange', () => { clearTimeout(markierT); if (!zeigerUnten) markierT = setTimeout(markiert, 700); });
+function markiert() {
+  const text = String(getSelection() ?? '').replace(/\s+/g, ' ').trim();
+  if (text.length < 3 || document.activeElement?.matches('input, textarea')) { for (const d of alle) { d.gelesen = ''; d.leiseLesen(); } return; } // selection gone: stop
   const d = sprecher();
-  if (d && ['normal', 'muede', 'liest'].includes(d.zustand)) d.setze('liest', 2200);
-});
+  if (d && text !== d.gelesen && d.zustand !== 'schwindelig') d.vorlesen(text);
+}
 // a hook element in the middle of the screen counts as "seen" (works on phones without hover)
 const mitteBeobachter = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? imBild.add(e.target) : imBild.delete(e.target)),
   { rootMargin: '-30% 0px -30% 0px' });
@@ -241,6 +256,7 @@ class DevFigur extends HTMLElement {
 
   /* --- what pages and the hooks call --- */
   sag(text, ms = 2800) {
+    this.leiseLesen();
     const b = this.el.blase;
     b.textContent = text; b.classList.add('zeigen');
     this.redetBis = performance.now() + ms;
@@ -277,6 +293,61 @@ class DevFigur extends HTMLElement {
     this.hutFlug = performance.now(); this.setze('huch', 1200);
     setTimeout(() => this.sag('Hey, mein Kalpak!', 2000), ruhig ? 0 : 950); // after landing, so the bubble doesn't hide the flying hat
     if (ruhig) this.hutFlug = null;
+  }
+
+  // reads selected text out loud. The bubble shows 7 words at a time, the spoken ones dark. A voice that reports
+  // word boundaries sets the pace; otherwise (no voice, or one without boundaries) a timer does.
+  vorlesen(text) {
+    this.leiseLesen();
+    const teile = text.split(' '), woerter = teile.slice(0, 30); // long selections: the first 30 words
+    if (teile.length > 30) woerter.push('…');
+    const anfang = [];
+    woerter.reduce((pos, w) => (anfang.push(pos), pos + w.length + 1), 0);
+    Object.assign(this, { gelesen: text, liest: true, redetBis: Infinity, obenBis: Infinity });
+    clearTimeout(this.sagT);
+    this.setze('liest');
+    const b = this.el.blase, mitStimme = 'speechSynthesis' in window;
+    let wort = -1, takt = 'uhr', textFertig = false, stimmeFertig = !mitStimme;
+    const fertig = () => { if (textFertig && stimmeFertig && this.liest) this.leseT = setTimeout(() => this.leiseLesen(), 900); };
+    const zeige = i => {
+      wort = i;
+      const s = i - i % 7;
+      b.replaceChildren(...woerter.slice(s, s + 7).map((w, j) => Object.assign(document.createElement('span'), { textContent: (j ? ' ' : '') + w, className: s + j > i ? 'noch' : '' })));
+      b.classList.add('zeigen', 'liest');
+      this.toggleAttribute('spricht', i % 2 === 0); // mouth open, closed, open …
+    };
+    const tick = () => {
+      if (!this.liest || takt === 'stimme') return;
+      if (wort + 1 >= woerter.length) { textFertig = true; this.removeAttribute('spricht'); return fertig(); }
+      zeige(wort + 1);
+      const w = woerter[wort];
+      this.leseT = setTimeout(tick, 240 + w.length * 24 + (/[.,!?;:]$/.test(w) ? 280 : 0));
+    };
+    if (mitStimme) {
+      const u = new SpeechSynthesisUtterance(woerter.join(' ').replace(/ …$/, ''));
+      Object.assign(u, { lang: document.documentElement.lang || 'de', pitch: 1.6, rate: 1.05 }); // a small mountain has a high voice
+      u.onboundary = e => { if (e.name !== 'word' || this.stimme !== u) return; takt = 'stimme'; clearTimeout(this.leseT); zeige(Math.max(0, anfang.findLastIndex(a => a <= e.charIndex))); };
+      u.onend = u.onerror = () => {
+        if (this.stimme !== u) return;
+        stimmeFertig = true;
+        if (takt === 'stimme') { textFertig = true; this.removeAttribute('spricht'); }
+        fertig();
+      };
+      this.stimme = u;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }
+    this.notT = setTimeout(() => this.leiseLesen(), 3000 + woerter.length * 800); // some voices never report their end
+    tick();
+  }
+  leiseLesen() {
+    if (!this.liest) return;
+    this.liest = false; clearTimeout(this.leseT); clearTimeout(this.notT);
+    if (this.stimme) { this.stimme = null; speechSynthesis.cancel(); }
+    this.removeAttribute('spricht');
+    this.el.blase.classList.remove('zeigen', 'liest');
+    this.redetBis = 0; this.obenBis = performance.now() + 1500;
+    if (this.zustand === 'liest') this.setze(this.grundZustand());
   }
 
   angetippt(e) {

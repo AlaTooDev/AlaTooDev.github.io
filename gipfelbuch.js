@@ -46,6 +46,8 @@ const IDEE = 'Idee: '; // the worker stores plain text, so the kind of entry tra
   }
 
   textfeld.addEventListener('input', zaehle);
+  // "Idee ins Gipfelbuch" on the horizon page: the book opens with "App-Idee" already chosen
+  document.querySelectorAll('[data-idee]').forEach(a => a.addEventListener('click', () => { form.elements.art.value = 'idee'; }));
   form.addEventListener('submit', async e => {
     e.preventDefault();
     if (!form.checkValidity()) { melde(BUCH_TEXTE.fehlt, true); form.querySelector(':invalid')?.focus(); return; }

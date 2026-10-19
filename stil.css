@@ -1,11 +1,12 @@
-/* alatoo.dev "Höhenlinien": a living contour map, Dev on his summit. */
+/* alatoo.dev "Höhenlinien": a living contour map, Dev on his summit. One section = one page; scrolling is the climb. */
 
 @font-face { font-family: 'Baloo 2'; src: url(assets/baloo2-800.woff) format('woff'); font-weight: 800; font-display: swap; }
 @font-face { font-family: 'Cormorant'; src: url(assets/cormorant-600-italic.woff2) format('woff2'); font-weight: 600; font-style: italic; font-display: swap; }
 @font-face { font-family: 'Cormorant'; src: url(assets/cormorant-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
 
 /* ---------- colors: change here, the map (karte.js) reads the --karte-* values too ----------
-   Contrast (WCAG): text tokens are at least 4.5:1 on --grund and on white; buttons use --knopf, not --blau. */
+   Contrast (WCAG): text tokens are at least 4.5:1 on --grund and on white; buttons use --knopf, not --blau.
+   Running text uses --text-2 (11:1), not --leise: over the moving lines the softer grey was hard to read. */
 :root {
   --grund: #EAF2EE;
   --grund-2: #D8E9E1;
@@ -13,7 +14,8 @@
   --flaeche-fest: #FFFFFF;
   --rand: rgba(14, 80, 66, .22);
   --text: #1A1A2E;
-  --leise: #3F524A;
+  --text-2: #24332D;         /* running text */
+  --leise: #3F524A;          /* small labels only */
   --blau: #22A68A;           /* Jade for shapes and fills, never for small text */
   --blau-text: #0E6F5C;      /* Jade for text: 5.5:1 on --grund */
   --knopf: #12735F;          /* button background, white text 5.8:1 */
@@ -23,14 +25,24 @@
   --wange-text: #B42357;
   --fokus: #B42357;
   --schatten: 0 30px 70px -40px rgba(26, 26, 46, .4);
-  /* the guestbook is paper in both themes */
+  /* paper (guestbook, trail signs) stays light in both themes, so it has its own ink */
   --papier: #FBF8F0;
   --papier-2: #F2ECDD;
   --tinte: #1A1A2E;
   --tinte-leise: #5B5446;
+  --tinte-akzent: #B42357;   /* 5.2:1 on both papers */
+  --tinte-gruen: #0E6F5C;
   --papier-linie: rgba(91, 84, 70, .28);
   --einband: #16836C;
   --nebel: #FFFFFF;
+  /* the horizon: ridges from far (1) to near (5) */
+  --lage-1: #D3E6DD;
+  --lage-2: #AFD5C6;
+  --lage-3: #78BBA5;
+  --lage-4: #349A81;
+  --lage-5: #12735F;
+  --schnee: #FFFFFF;
+  --kran: #1A1A2E;
   --karte-grund: #EAF2EE;
   --karte-linie: #16836C;
   --karte-warm: #E0457B;
@@ -50,6 +62,7 @@
     --flaeche-fest: #0E1E1A;
     --rand: rgba(95, 208, 181, .24);
     --text: #F4F6FA;
+    --text-2: #D6E4DE;
     --leise: #B4CBC2;
     --blau-text: #5FD0B5;
     --knopf: #5FD0B5;
@@ -62,6 +75,13 @@
     --papier-2: #E2DAC6;
     --einband: #103229;
     --nebel: #3D5A51;
+    --lage-1: #24493F;
+    --lage-2: #1B3C34;
+    --lage-3: #142F29;
+    --lage-4: #0E241F;
+    --lage-5: #091915;
+    --schnee: #CFE3DB;
+    --kran: #CFE3DB;
     --karte-grund: #07120F;
     --karte-linie: #5FD0B5;
     --karte-warm: #FF8FB1;
@@ -71,7 +91,10 @@
 
 /* ---------- base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+/* every page snaps into place; a fast flick still stops at the next page.
+   Phones and very low windows only snap when close, because their pages are often taller than the screen. */
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+@media (max-width: 880px), (max-height: 600px) { html { scroll-snap-type: y proximity; } }
 body {
   margin: 0; overflow-x: hidden;
   background: radial-gradient(1100px 760px at 72% 38%, var(--grund-2), var(--grund) 72%) var(--grund);
@@ -90,12 +113,28 @@ body::before {
 .karte { position: fixed; left: 0; top: 0; width: 100%; height: 100lvh; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
 .karte-an .karte { opacity: 1; }
 main, .fuss { position: relative; z-index: 1; }
+main { overflow-x: clip; }
+main > section { position: relative; min-height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; }
 img { max-width: 100%; }
 a { color: inherit; }
 em { font-family: var(--serif); font-style: italic; font-weight: 600; }
 :focus-visible { outline: 3px solid var(--fokus); outline-offset: 3px; border-radius: 4px; }
 .sprung { position: absolute; z-index: 50; left: 16px; top: -80px; padding: 12px 18px; border-radius: 12px; background: var(--text); color: var(--grund); font-weight: 700; text-decoration: none; }
 .sprung:focus { top: calc(12px + env(safe-area-inset-top, 0px)); }
+
+/* a clearing in the map behind running text: the lines fade out, the text stands on calm ground */
+.lichtung { position: relative; isolation: isolate; }
+.lichtung::before {
+  content: ''; position: absolute; z-index: -1; inset: 6% 3%; border-radius: 48px; pointer-events: none;
+  background: var(--grund); box-shadow: 0 0 60px 46px var(--grund); opacity: .84;
+}
+
+/* ---------- moving between pages (seiten.js sets --ein/--aus on each page: 0 = in place, 1 = a screen away) ----------
+   Blocks with data-tiefe lag behind by their depth: arriving they rise one after another, leaving they sink back into the map. */
+[data-tiefe] {
+  transform: translate3d(0, calc((var(--ein, 0) * 34vh + var(--aus, 0) * 16vh) * var(--d, .3)), 0) scale(calc(1 - var(--aus, 0) * .05));
+  opacity: calc(1 - var(--ein, 0) * 1.3 - var(--aus, 0) * 1.4);
+}
 
 /* ---------- header ---------- */
 .kopf {
@@ -110,6 +149,36 @@ em { font-family: var(--serif); font-style: italic; font-weight: 600; }
 .menue a { padding: 12px 14px; border-radius: 999px; text-decoration: none; font: 600 .9375rem/1 var(--sans); }
 .menue a:hover { background: var(--rand); }
 
+/* ---------- stages of the climb (right edge) and the hopping arrow (bottom) ---------- */
+.etappen {
+  position: fixed; z-index: 20; right: max(14px, env(safe-area-inset-right, 0px)); top: 50%; translate: 0 -50%;
+  display: grid; gap: 4px; padding: 6px 0;
+}
+.etappen::before { content: ''; position: absolute; right: 15px; top: 20px; bottom: 20px; border-right: 2px dotted var(--leise); opacity: .55; }
+.etappen a { position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-height: 32px; padding-right: 8px; text-decoration: none; border-radius: 999px; }
+.etappen a::after { /* the waypoint; the current one becomes a little peak */
+  content: ''; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--grund); border: 2px solid var(--leise);
+  transition: transform .4s cubic-bezier(.3, 1.6, .5, 1), background .3s, border-color .3s, border-radius .3s, clip-path .3s;
+}
+.etappen span {
+  padding: 5px 10px; border-radius: 999px; background: var(--text); color: var(--grund); font: 600 .75rem/1 var(--mono); letter-spacing: .06em; white-space: nowrap;
+  opacity: 0; translate: 8px 0; transition: opacity .25s, translate .3s; pointer-events: none;
+}
+.etappen a:hover span, .etappen a:focus-visible span, .etappen a[aria-current] span { opacity: 1; translate: 0 0; }
+.etappen a[aria-current] span { background: transparent; color: var(--text); padding-inline: 0; }
+.etappen a[aria-current]::after { width: 16px; height: 14px; border: 0; border-radius: 0; background: var(--wange-text); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform: scale(1.15); }
+.etappen a:hover::after { transform: scale(1.3); }
+
+.weiter {
+  position: fixed; z-index: 20; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--rand); border-radius: 50%;
+  background: var(--flaeche); color: var(--text); cursor: pointer; transition: opacity .4s, visibility .4s;
+}
+.weiter svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; animation: huepfen 2s cubic-bezier(.5, 0, .5, 1) infinite; }
+@keyframes huepfen { 0%, 60%, 100% { transform: translateY(-2px); } 30% { transform: translateY(4px); } 45% { transform: translateY(0); } }
+.weiter:hover { background: var(--text); color: var(--grund); }
+.weiter.weg { opacity: 0; visibility: hidden; }
+
 /* ---------- buttons ---------- */
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px;
@@ -122,14 +191,15 @@ em { font-family: var(--serif); font-style: italic; font-weight: 600; }
 .knopf.klein { min-height: 44px; padding: 0 18px; font-size: .9375rem; }
 .knopf svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ---------- hero ---------- */
+/* ---------- 00 hero ---------- */
 .held {
-  position: relative; width: var(--breite); min-height: 100svh; margin: 0 auto; padding: 132px 0 96px;
+  width: var(--breite); margin: 0 auto; padding: 120px 0 88px;
   display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); align-items: center; gap: 24px;
   cursor: crosshair;
 }
 .held a, .held button { cursor: pointer; }
-.held-text { position: relative; z-index: 2; cursor: auto; }
+.held-text { z-index: 2; cursor: auto; }
+.held-text.lichtung::before { opacity: .6; }
 .etikett {
   display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 10px 15px; border-radius: 999px;
   background: var(--flaeche); border: 1px solid var(--rand);
@@ -145,8 +215,7 @@ h1 em, h2 em { font-size: 1.12em; letter-spacing: -.01em; color: var(--blau-text
 .js h1 .zeile > span { animation: steigen 1.15s cubic-bezier(.2, .8, .2, 1) both; }
 .js h1 .zeile + .zeile > span { animation-delay: .12s; }
 @keyframes steigen { from { transform: translateY(112%); } }
-/* the lead sits on the map: a soft halo of the ground color keeps it readable over the lines */
-.lead { max-width: 31em; margin: 0; color: var(--text); font-size: clamp(1.125rem, 1.4vw, 1.3rem); text-shadow: 0 0 18px var(--grund), 0 0 6px var(--grund); }
+.lead { max-width: 31em; margin: 0; color: var(--text); font-size: clamp(1.15rem, 1.4vw, 1.3rem); font-weight: 500; }
 
 .gipfel { position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; min-height: 440px; }
 .gebirge {
@@ -159,7 +228,7 @@ dev-figur { display: block; aspect-ratio: 1; --dev-blase: var(--text); --dev-bla
 dev-figur > svg, dev-figur > img { display: block; width: 100%; height: 100%; }
 .dev { position: relative; z-index: 2; width: clamp(160px, 17vw, 236px); margin-top: 56px; --dev-schatten: drop-shadow(0 24px 24px rgba(5, 18, 14, .35)); }
 .gipfel-name { position: relative; z-index: 2; margin: 16px 0 0; }
-.gipfel-name em { font-size: clamp(1.5rem, 2vw, 1.9rem); line-height: 1; text-shadow: 0 0 14px var(--grund); }
+.gipfel-name em { font-size: clamp(1.5rem, 2vw, 1.9rem); line-height: 1; text-shadow: 0 0 14px var(--grund), 0 0 4px var(--grund); }
 .mono { margin: 0; font: 600 .78rem/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--leise); }
 
 /* labels of the peaks a visitor sets (positioned by karte.js) */
@@ -180,15 +249,16 @@ dev-figur > svg, dev-figur > img { display: block; width: 100%; height: 100%; }
 .hoehenmesser::before { content: '▲ '; color: var(--wange); }
 .hoehenmesser.an { opacity: 1; }
 
-/* ---------- sections ---------- */
-.abschnitt { width: var(--breite); margin: 0 auto; padding-top: clamp(96px, 13vw, 180px); }
-.abschnitt-kopf { display: grid; gap: 18px; max-width: 760px; margin-bottom: clamp(36px, 4.5vw, 64px); }
-.abschnitt-kopf p:not(.nummer) { margin: 0; max-width: 36em; color: var(--leise); font-size: 1.15rem; }
-.abschnitt-kopf.mitte { justify-items: center; margin-inline: auto; text-align: center; }
-h2 { margin: 0; font: 800 clamp(2.6rem, 6vw, 5rem)/.98 var(--display); letter-spacing: -.03em; text-wrap: balance; }
+/* ---------- pages ---------- */
+.abschnitt {
+  width: var(--breite); margin: 0 auto; padding-block: clamp(88px, 11vh, 112px) clamp(64px, 8vh, 88px);
+  display: flex; flex-direction: column; justify-content: safe center; gap: clamp(24px, 4.5vh, 52px);
+}
+.abschnitt-kopf { display: grid; gap: 16px; max-width: 760px; }
+.abschnitt-kopf p:not(.nummer) { margin: 0; max-width: 34em; color: var(--text-2); font-size: 1.15rem; font-weight: 500; line-height: 1.6; }
+h2 { margin: 0; font: 800 clamp(2.5rem, 4.8vw, 4.5rem)/.98 var(--display); letter-spacing: -.03em; text-wrap: balance; }
 .nummer { margin: 0; display: flex; align-items: center; gap: 14px; font: 700 .8rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--blau-text); }
 .nummer::after { content: ''; flex: 0 0 72px; height: 1.5px; background: currentColor; opacity: .5; }
-.mitte .nummer::before { content: ''; flex: 0 0 72px; height: 1.5px; background: currentColor; opacity: .5; }
 
 .box {
   position: relative; isolation: isolate; overflow: hidden; padding: clamp(26px, 3vw, 40px); border-radius: 28px;
@@ -202,27 +272,28 @@ h2 { margin: 0; font: 800 clamp(2.6rem, 6vw, 5rem)/.98 var(--display); letter-sp
 }
 .box:hover::before { transform: scale(1.18); }
 .box h3 { margin: 0; font: 800 clamp(1.65rem, 2.4vw, 2.05rem)/1.08 var(--display); letter-spacing: -.02em; }
-.box p { color: var(--leise); }
+.box p { color: var(--text-2); }
 .box .mono { color: var(--blau-text); }
 .mehr { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 2px solid var(--blau-text); color: var(--blau-text); font-weight: 700; text-decoration: none; }
 .mehr:hover { color: var(--text); border-color: var(--text); }
 .mehr span { transition: transform .25s; }
 .mehr:hover span { transform: translateX(4px); }
 
-/* ---------- 01 apps: Peaked ---------- */
-.peaked { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: clamp(28px, 4.5vw, 64px); }
-.app-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+/* ---------- 01 Peaked ---------- */
+.peaked { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: clamp(24px, 3vw, 40px); }
+.app-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
 .app-kopf img { width: 56px; height: 56px; border-radius: 15px; box-shadow: 0 10px 24px -10px rgba(5, 18, 14, .5); }
 .chip { margin-left: auto; padding: 8px 12px; border-radius: 999px; border: 1.5px solid currentColor; font: 700 .75rem/1 var(--mono); letter-spacing: .04em; color: var(--wange-text); }
-.peaked h3 { font-size: clamp(3rem, 6vw, 5.2rem); line-height: .95; letter-spacing: -.035em; }
-.claim { margin: 6px 0 18px; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.1; }
+.peaked h3 { font-size: clamp(2.8rem, 5vw, 4.4rem); line-height: .95; letter-spacing: -.035em; }
+.claim { margin: 6px 0 14px; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.1; }
 .claim em { color: var(--blau-text); }
-.fakten { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding: 0; list-style: none; }
+.peaked-text > p:not(.claim) { margin: 0; font-size: 1.1rem; font-weight: 500; }
+.fakten { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
 .fakten li { padding: 9px 13px; border-radius: 999px; border: 1px solid var(--rand); font: 600 .78rem/1 var(--mono); }
 .fakten li.stark { background: var(--knopf); border-color: transparent; color: var(--knopf-text); }
-blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var(--wange-text); font: italic 600 clamp(1.3rem, 1.9vw, 1.55rem)/1.28 var(--serif); }
+blockquote { margin: 22px 0 18px; padding-left: 18px; border-left: 3px solid var(--wange-text); font: italic 600 clamp(1.3rem, 1.9vw, 1.55rem)/1.28 var(--serif); }
 .handy {
-  position: relative; justify-self: center; width: min(290px, 100%); aspect-ratio: 405 / 720; padding: 9px; border-radius: 42px;
+  position: relative; justify-self: center; width: min(260px, 29vh, 100%); aspect-ratio: 405 / 720; padding: 9px; border-radius: 42px;
   background: #08110F; box-shadow: 0 60px 90px -45px rgba(5, 18, 14, .85), inset 0 0 0 1px rgba(255, 255, 255, .12);
   transform: perspective(1100px) rotateY(var(--ry, -14deg)) rotateX(var(--rx, 6deg)) rotate(1.5deg);
   transition: transform .6s cubic-bezier(.2, .8, .2, 1);
@@ -230,62 +301,89 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var
 .handy img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 34px; }
 .handy::after { content: ''; position: absolute; inset: 9px; border-radius: 34px; pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, .22), transparent 38%); }
 
-/* ---------- 01 apps: future peaks on a summit panorama board ---------- */
-.panorama { margin-top: clamp(64px, 8vw, 110px); }
-.panorama-titel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 clamp(28px, 3.5vw, 44px); font: italic 600 clamp(1.6rem, 2.6vw, 2.2rem)/1.1 var(--serif); }
-.panorama-titel .mono { color: var(--blau-text); }
-.horizont { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 0; list-style: none; }
-.horizont li { position: relative; display: grid; align-content: start; justify-items: center; gap: 10px; padding: 0 6px 76px; text-align: center; }
-.horizont li::after { /* leader line down to the peak, continued in the SVG */
-  content: ''; position: absolute; left: 50%; bottom: 0; height: 60px; border-left: 2px dotted var(--blau-text);
+/* ---------- 02 horizon: five ridges in depth, signs on the peaks, fog you can wipe away ---------- */
+.horizont { justify-content: flex-start; padding-bottom: 0; }
+.horizont .abschnitt-kopf { z-index: 3; max-width: min(540px, 44%); }
+.landschaft {
+  position: absolute; z-index: 1; left: 50%; bottom: 0; width: 100vw; height: min(64svh, 40vw); translate: -50% 0;
+  --mx: 0; --my: 0; touch-action: pan-y;
 }
-.horizont h3 { margin: 0; font: 800 clamp(1.6rem, 2.4vw, 2.1rem)/1.05 var(--display); letter-spacing: -.02em; }
-.horizont p:not(.mono) { margin: 0; max-width: 26em; color: var(--leise); }
-.horizont .mono { color: var(--blau-text); }
-.horizont .mehr { margin-top: 6px; }
-.kamm { display: block; width: 100%; height: clamp(120px, 15vw, 200px); overflow: visible; }
-.kamm-fern { fill: var(--grund-2); }
-.kamm-nah { fill: var(--grund-2); }
-.kamm-linie { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.kamm-zeiger { fill: none; stroke: var(--blau-text); stroke-width: 2; stroke-dasharray: 2 4; vector-effect: non-scaling-stroke; }
-.nebel ellipse { fill: var(--nebel); opacity: .95; transform-box: fill-box; animation: treiben 11s ease-in-out infinite alternate; }
-.nebel ellipse:nth-child(2) { opacity: .55; animation-duration: 14s; animation-direction: alternate-reverse; }
-.nebel ellipse:nth-child(3) { animation-duration: 17s; }
-@keyframes treiben { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+/* --t = depth (0 far … 1 near): near ridges rise faster when the page snaps in and follow the mouse more */
+.lage, .dunstband, .ziel {
+  transform: translate3d(calc(var(--mx) * var(--t) * 46px), calc(var(--ein, 0) * var(--t) * 52vh - var(--aus, 0) * var(--t) * 24vh + var(--my) * var(--t) * 12px), 0);
+}
+.lage { position: absolute; inset: 0; pointer-events: none; }
+.lage svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.l1 path { fill: var(--lage-1); }
+.l2 path { fill: var(--lage-2); }
+.l3 path { fill: var(--lage-3); }
+.l4 path { fill: var(--lage-4); }
+.l5 path { fill: var(--lage-5); }
+.lage .geruecht { fill: var(--lage-1); stroke: var(--leise); stroke-width: 1.6; stroke-dasharray: 5 6; vector-effect: non-scaling-stroke; }
+.lage .schnee { fill: var(--schnee); }
+.kran path { fill: none; stroke: var(--kran); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.kran rect { fill: var(--kran); }
+.lage .fahne { fill: var(--papier); stroke: var(--tinte-akzent); stroke-width: 2; stroke-dasharray: 4 3; stroke-linejoin: round; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: left center; animation: wehen 2.4s ease-in-out infinite; }
+@keyframes wehen { 50% { transform: skewY(-7deg) scaleX(.9); } }
+.dunstband {
+  position: absolute; left: -10%; width: 120%; top: var(--oben); height: 26%; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, var(--nebel), transparent); opacity: .75;
+  animation: treiben 18s ease-in-out infinite alternate;
+}
+.dunstband + .lage + .lage + .dunstband { animation-duration: 23s; animation-direction: alternate-reverse; opacity: .6; }
+@keyframes treiben { from { translate: -5% 0; } to { translate: 5% 0; } }
+.kulisse { position: absolute; inset: 0; }
+.dunst { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
-/* ---------- 02 trail rules: one station per rule, no boxes (index list idea from Aura's "Atlas Brut") ---------- */
-.weg { position: relative; margin: 0; padding: 0; list-style: none; counter-reset: regel; }
-.weg::before { /* the trail */
-  content: ''; position: absolute; left: 11px; top: 40px; bottom: 40px; border-left: 2px dashed var(--blau-text); opacity: .55;
+.ziele { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+/* a trail sign on paper, on a post that stands on its peak */
+.ziel {
+  --stiel: clamp(24px, 4vh, 44px);
+  position: absolute; left: var(--x); bottom: calc(100% - var(--y) + var(--stiel)); width: clamp(210px, 18vw, 250px); translate: -50% 0;
+  display: grid; gap: 6px; padding: 14px 16px 16px; border-radius: 14px; pointer-events: auto;
+  background: var(--papier); color: var(--tinte); box-shadow: 0 22px 40px -24px rgba(5, 18, 14, .6), 0 0 0 1px rgba(26, 26, 46, .08);
 }
-.weg li {
-  position: relative; counter-increment: regel; display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 8px clamp(24px, 5vw, 80px);
-  padding: clamp(30px, 4vw, 52px) 0 clamp(30px, 4vw, 52px) 52px;
+.ziel::after { content: ''; position: absolute; left: 50%; top: 100%; height: var(--stiel); border-left: 2px solid var(--text); translate: -1px 0; }
+.ziel::before { /* the dot on the summit */
+  content: ''; position: absolute; left: 50%; top: calc(100% + var(--stiel) - 5px); width: 10px; height: 10px; translate: -50% 0; border-radius: 50%;
+  background: var(--papier); border: 2px solid var(--text);
 }
-.weg li + li::after { /* a contour line between the stations */
-  content: ''; position: absolute; left: 52px; right: 0; top: -6px; height: 12px; background: var(--rand);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12'%3E%3Cpath d='M0 6 Q20 0 40 6 T80 6 T120 6 T160 6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left center / 160px 12px;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12'%3E%3Cpath d='M0 6 Q20 0 40 6 T80 6 T120 6 T160 6' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left center / 160px 12px;
-}
+.ziel:nth-child(2) { outline: 1.5px dashed var(--tinte-leise); outline-offset: -6px; } /* only a rumour: a sketched sign */
+.ziel .mono { color: var(--tinte-leise); font-size: .7rem; }
+.ziel h3 { margin: 0; font: 800 1.35rem/1.1 var(--display); letter-spacing: -.01em; }
+.ziel p:not(.mono) { margin: 0; font-size: .95rem; line-height: 1.45; }
+.ziel .mehr { justify-self: start; margin-top: 2px; padding: 4px 0; font-size: .92rem; color: var(--tinte-gruen); border-color: var(--tinte-gruen); }
+.ziel .mehr:hover { color: var(--tinte); border-color: var(--tinte); }
+.nur-touch { display: none; }
+@media (pointer: coarse) { .nur-maus { display: none; } .nur-touch { display: inline; } }
+
+/* ---------- 03 trail rules: the trail climbs from station to station (index idea from Aura's "Atlas Brut") ---------- */
+.weg-rahmen { --stufe: clamp(28px, 5vh, 50px); position: relative; }
+.weg-linie { position: absolute; left: 12px; top: 12px; width: calc(100% - 12px); height: calc(3 * var(--stufe)); overflow: visible; }
+.weg-linie path { fill: none; stroke: var(--blau-text); stroke-width: 2.5; stroke-dasharray: 2 8; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.weg { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; counter-reset: regel; }
+.weg li { position: relative; counter-increment: regel; display: grid; align-content: start; gap: 10px; padding: calc(3 * var(--stufe) + 46px) clamp(14px, 2.6vw, 40px) 0 0; }
 .weg li::before { /* waypoint on the trail */
-  content: ''; position: absolute; left: 0; top: calc(clamp(30px, 4vw, 52px) + 14px); width: 24px; height: 24px; border-radius: 50%;
+  content: ''; position: absolute; left: 0; top: calc((3 - var(--n)) * var(--stufe)); width: 24px; height: 24px; border-radius: 50%;
   background: var(--grund); border: 3px solid var(--blau-text); transition: background .3s, border-color .3s, transform .4s cubic-bezier(.3, 1.6, .5, 1);
 }
+.weg li::after { /* from the waypoint down to its text */
+  content: ''; position: absolute; left: 11px; top: calc((3 - var(--n)) * var(--stufe) + 28px); height: calc(var(--n) * var(--stufe) + 8px); border-left: 2px dotted var(--blau-text); opacity: .6;
+}
 .weg li:hover::before { background: var(--wange); border-color: var(--wange-text); transform: scale(1.2); }
-.hoehe { display: grid; align-content: start; gap: 6px; font: 700 .85rem/1 var(--mono); letter-spacing: .08em; color: var(--blau-text); }
-.hoehe::before { content: counter(regel, decimal-leading-zero); font: 800 clamp(3.4rem, 6vw, 5.4rem)/.85 var(--display); letter-spacing: -.04em; color: var(--text); }
-.weg h3 { margin: 0 0 14px; font: 800 clamp(1.9rem, 3.6vw, 3.1rem)/1.02 var(--display); letter-spacing: -.025em; text-wrap: balance; transition: color .3s; }
+.hoehe { display: flex; align-items: baseline; gap: 12px; font: 700 .8rem/1 var(--mono); letter-spacing: .08em; color: var(--blau-text); }
+.hoehe::before { content: counter(regel, decimal-leading-zero); font: 800 clamp(2.2rem, 3.4vw, 3rem)/.85 var(--display); letter-spacing: -.04em; color: var(--text); }
+.weg h3 { margin: 0; font: 800 clamp(1.3rem, 1.9vw, 1.75rem)/1.08 var(--display); letter-spacing: -.02em; text-wrap: balance; transition: color .3s; }
 .weg li:hover h3 { color: var(--blau-text); }
-.weg p { margin: 0; max-width: 34em; color: var(--leise); font-size: 1.125rem; }
+.weg p { margin: 0; color: var(--text-2); font-size: 1.0625rem; font-weight: 500; line-height: 1.6; }
 
-/* ---------- 03 about me ---------- */
+/* ---------- 04 about me ---------- */
 .ueber { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); align-items: center; gap: clamp(32px, 6vw, 88px); }
-.ueber .abschnitt-kopf { margin-bottom: 0; }
 .ueber .abschnitt-kopf p:not(.nummer) { color: var(--text); }
 .foto { justify-self: center; display: grid; justify-items: center; margin: 0; rotate: 2.5deg; transition: rotate .5s cubic-bezier(.3, 1.4, .5, 1); }
 .foto:hover { rotate: 0deg; }
 .foto-rahmen { /* a print with a white border, like a photo pinned to the hut wall */
-  position: relative; width: min(320px, 72vw); aspect-ratio: 1; border: 14px solid var(--papier); border-bottom-width: 64px; border-radius: 6px;
+  position: relative; width: min(320px, 72vw, 44vh); aspect-ratio: 1; border: 14px solid var(--papier); border-bottom-width: 64px; border-radius: 6px;
   background: repeating-radial-gradient(circle at 50% 110%, transparent 0 14px, var(--rand) 14px 15.5px), var(--grund-2);
   box-shadow: var(--schatten), 0 0 0 1px var(--rand);
 }
@@ -295,11 +393,15 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var
 .foto figcaption em { font-size: 1.6rem; line-height: 1; }
 .foto figcaption .mono { color: var(--tinte-leise); font-size: .72rem; }
 
-/* ---------- 04 guestbook: an open book (idea from Meng To's "Book Serif Index" on Aura) ---------- */
-.kontakt h2 { font-size: clamp(3.4rem, 10vw, 8rem); }
-.dev-jubel { width: clamp(96px, 9vw, 124px); margin: 4px 0 -10px; --dev-schatten: drop-shadow(0 16px 18px rgba(5, 18, 14, .35)); }
+/* ---------- 05 guestbook: an open book (idea from Meng To's "Book Serif Index" on Aura) ---------- */
+.kontakt { flex-direction: row; align-items: center; gap: clamp(28px, 4vw, 64px); }
+.buch-kopf { flex: 0 0 min(340px, 30%); display: grid; justify-items: start; gap: 16px; }
+.buch-kopf > p:not(.nummer) { margin: 0; color: var(--text-2); font-size: 1.1rem; font-weight: 500; line-height: 1.6; }
+.dev-jubel { width: clamp(84px, 8vw, 112px); margin: 0 0 -6px; --dev-schatten: drop-shadow(0 16px 18px rgba(5, 18, 14, .35)); }
+.post { display: grid; justify-items: start; gap: 12px; margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rand); }
+.post p { margin: 0; color: var(--text-2); font-size: 1rem; font-weight: 500; }
 .buch {
-  position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 1100px; margin: 0 auto;
+  position: relative; isolation: isolate; flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   filter: drop-shadow(0 40px 50px rgba(5, 18, 14, .28));
 }
 .buch::before { /* the cover peeking out behind the pages */
@@ -307,64 +409,61 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .08);
 }
 .seite {
-  position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 640px; min-width: 0;
-  padding: clamp(26px, 3.6vw, 52px); color: var(--tinte); background: var(--papier);
+  position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  padding: clamp(22px, 2.8vw, 40px); color: var(--tinte); background: var(--papier);
   box-shadow: 0 1px 0 var(--papier-2), 0 3px 0 var(--papier-2), 0 5px 0 #d9cfb6; /* the stack of pages */
 }
 .seite.links { border-radius: 16px 4px 4px 16px; background: linear-gradient(to left, rgba(60, 45, 20, .16), transparent 10%), var(--papier); }
 .seite.rechts { border-radius: 4px 16px 16px 4px; background: linear-gradient(to right, rgba(60, 45, 20, .2), transparent 10%), var(--papier); }
 .kopfzeile { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--papier-linie); font: 600 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise); }
-.buch-titel { margin: 8px 0 4px; font: italic 600 clamp(1.9rem, 3vw, 2.5rem)/1 var(--serif); }
-.folio { margin: auto 0 0; padding-top: 12px; text-align: center; font: 500 .8rem/1 var(--serif); color: var(--tinte-leise); }
+.buch-titel { margin: 4px 0 0; font: italic 600 clamp(1.7rem, 2.6vw, 2.2rem)/1 var(--serif); }
+.folio { margin: auto 0 0; padding-top: 8px; text-align: center; font: 500 .8rem/1 var(--serif); color: var(--tinte-leise); }
 
-.eintraege { display: grid; align-content: start; gap: 0; max-height: 470px; margin: 0; padding: 0 6px 0 0; overflow: auto; list-style: none; border-radius: 6px; scrollbar-color: var(--papier-linie) transparent; }
-.eintraege li { display: grid; gap: 6px; padding: 18px 0; border-bottom: 1px dashed var(--papier-linie); }
+.eintraege { display: grid; align-content: start; gap: 0; max-height: clamp(220px, 36vh, 360px); margin: 0; padding: 0 6px 0 0; overflow: auto; list-style: none; border-radius: 6px; scrollbar-color: var(--papier-linie) transparent; }
+.eintraege li { display: grid; gap: 6px; padding: 16px 0; border-bottom: 1px dashed var(--papier-linie); }
 .eintraege .was { margin: 0; font: italic 600 1.35rem/1.35 var(--serif); }
 .eintraege li:first-child .was::first-letter { float: left; margin: 4px 8px 0 0; font: 800 3.1rem/.8 var(--display); font-style: normal; color: var(--einband); }
 .eintraege .wer { margin: 0; font: 600 .75rem/1.4 var(--mono); letter-spacing: .06em; color: var(--tinte-leise); }
 .eintraege .leer { color: var(--tinte-leise); font-style: italic; }
-.buch-stempel { align-self: flex-end; width: 112px; margin: auto 8px -8px 0; rotate: -14deg; opacity: .7; fill: none; stroke: var(--wange-text); stroke-width: 2; }
-.buch-stempel text { fill: var(--wange-text); stroke: none; font: 700 10.5px/1 var(--mono); letter-spacing: .12em; }
+.buch-stempel { align-self: flex-end; width: 104px; margin: auto 8px -8px 0; rotate: -14deg; opacity: .7; fill: none; stroke: var(--tinte-akzent); stroke-width: 2; }
+.buch-stempel text { fill: var(--tinte-akzent); stroke: none; font: 700 10.5px/1 var(--mono); letter-spacing: .12em; }
 .buch-stempel + .folio { margin-top: 0; }
-.marke-idee { justify-self: start; padding: 5px 9px; border: 1.5px solid var(--wange-text); border-radius: 4px; rotate: -2deg; font: 700 .7rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--wange-text); }
+.marke-idee { justify-self: start; padding: 5px 9px; border: 1.5px solid var(--tinte-akzent); border-radius: 4px; rotate: -2deg; font: 700 .7rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-akzent); }
 
-.eintragen .art { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 6px; padding: 0; border: 0; }
-.eintragen .art legend { width: 100%; margin-bottom: 10px; padding: 0; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
+.eintragen .art { display: flex; flex-wrap: wrap; gap: 10px; margin: 2px 0 4px; padding: 0; border: 0; }
+.eintragen .art legend { width: 100%; margin-bottom: 8px; padding: 0; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
 .art label { position: relative; cursor: pointer; }
 .art input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .art span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--papier-linie); font-weight: 600; transition: background .2s, color .2s, border-color .2s; }
 .art input:checked + span { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
-.art input:focus-visible + span { outline: 3px solid var(--wange-text); outline-offset: 2px; }
-.feld { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
+.art input:focus-visible + span { outline: 3px solid var(--tinte-akzent); outline-offset: 2px; }
+.feld { display: flex; justify-content: space-between; gap: 12px; margin-top: 4px; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
 .zaehler { letter-spacing: 0; }
 .eintragen input[type=text], .eintragen textarea {
   width: 100%; padding: 8px 2px; border: 0; border-bottom: 2px solid var(--tinte-leise); border-radius: 0; background: transparent;
   color: var(--tinte); font: 500 1.0625rem/1.5 var(--sans);
 }
-.eintragen textarea { resize: vertical; min-height: 140px; line-height: 32px; padding-top: 0; border: 0;
+.eintragen textarea { resize: vertical; min-height: 128px; line-height: 32px; padding-top: 0; border: 0;
   background: repeating-linear-gradient(transparent 0 31px, var(--papier-linie) 31px 32px); } /* lined paper */
 .eintragen input::placeholder { color: var(--tinte-leise); opacity: .8; }
-.eintragen input[type=text]:focus-visible, .eintragen textarea:focus-visible { outline: 3px solid var(--wange-text); outline-offset: 4px; }
+.eintragen input[type=text]:focus-visible, .eintragen textarea:focus-visible { outline: 3px solid var(--tinte-akzent); outline-offset: 4px; }
 .haken { display: flex; align-items: flex-start; gap: 10px; font-size: .95rem; line-height: 1.45; cursor: pointer; }
 .haken input { flex: none; width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--einband); }
 .honig { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.absenden { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 6px; }
+.absenden { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 4px; }
 .stempel { /* a rubber summit stamp */
-  min-height: 52px; padding: 0 26px; border: 3px double var(--wange-text); border-radius: 10px; background: transparent; color: var(--wange-text);
+  min-height: 52px; padding: 0 26px; border: 3px double var(--tinte-akzent); border-radius: 10px; background: transparent; color: var(--tinte-akzent);
   font: 800 1.05rem/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; rotate: -3deg;
   transition: rotate .3s cubic-bezier(.3, 1.6, .5, 1), background .2s, color .2s;
 }
-.stempel:hover { rotate: 0deg; background: var(--wange-text); color: var(--papier); }
+.stempel:hover { rotate: 0deg; background: var(--tinte-akzent); color: var(--papier); }
 .stempel:disabled { opacity: .5; cursor: wait; }
 .status { flex: 1 1 200px; margin: 0; font-size: .95rem; line-height: 1.4; }
-.status.fehler { color: var(--wange-text); font-weight: 600; }
+.status.fehler { color: var(--tinte-akzent); font-weight: 600; }
 
-.post { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 24px; margin-top: clamp(48px, 6vw, 72px); text-align: center; }
-.post p { margin: 0; font-size: 1.125rem; }
-
-/* footer */
+/* footer: the last stop when you scroll all the way down */
 .fuss {
-  width: var(--breite); margin: clamp(110px, 14vw, 180px) auto 0; padding: 28px 0 44px; border-top: 1px solid var(--rand);
+  width: var(--breite); margin: 0 auto; padding: 28px 0 44px; border-top: 1px solid var(--rand); scroll-snap-align: end;
   display: flex; flex-wrap: wrap; align-items: center; gap: 16px 36px; font: 500 .85rem/1.5 var(--mono); color: var(--leise);
 }
 .fuss img { display: block; height: 30px; width: auto; }
@@ -373,30 +472,61 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var
 .fuss a:hover { color: var(--text); }
 .fuss p { margin: 0; }
 
-/* ---------- section titles: each word rises out of a mask (technique from Aura's "Nexus Render Kinetic Hero") ---------- */
+/* ---------- page titles: each word rises out of a mask, every time you arrive (technique from Aura's "Nexus Render Kinetic Hero") ---------- */
 .wm { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .1em .16em; margin: 0 -.1em -.16em; }
-.wm > span { display: inline-block; transition: transform 1.1s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 55ms + .1s); }
-.wartet .wm > span { transform: translateY(115%); }
+.wm > span { display: inline-block; transition: transform 1.1s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 60ms + .15s); }
+.wartet .wm > span { transform: translateY(115%); transition-duration: 0s; transition-delay: 0s; }
 
-/* ---------- reveal on scroll: only what starts below the screen waits (karte.js sets .wartet), so nothing in view is ever hidden ---------- */
-[data-zeige] { transition: opacity .9s ease, transform 1s cubic-bezier(.2, .8, .2, 1); }
-[data-zeige].wartet { opacity: 0; transform: translateY(34px); }
+/* ---------- wide screens: room for the stages on the right ---------- */
+@media (min-width: 1101px) { :root { --breite: min(1220px, calc(100% - 150px)); } }
+@media (max-width: 1100px) { .etappen { display: none; } }
+
+/* ---------- low windows (laptops): everything a bit tighter so each page still fits ---------- */
+@media (min-width: 881px) and (max-height: 820px) {
+  h2 { font-size: clamp(2.2rem, 4vw, 3.5rem); }
+  .abschnitt-kopf { gap: 10px; }
+  .abschnitt-kopf p:not(.nummer) { font-size: 1.05rem; }
+  .peaked blockquote { display: none; }
+  .peaked h3 { font-size: clamp(2.4rem, 4vw, 3.4rem); }
+  .weg-rahmen { --stufe: 26px; }
+  .eintraege { max-height: 230px; }
+  .eintragen textarea { min-height: 0; height: 96px; }
+  .kopfzeile, .folio { display: none; }
+  .eintragen .art legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .weg li { padding-top: calc(3 * var(--stufe) + 36px); gap: 8px; }
+  .weg p { font-size: 1rem; line-height: 1.55; }
+  .seite { gap: 8px; }
+  .buch-stempel { display: none; }
+  .landschaft { height: min(56svh, 40vw); }
+}
 
 /* ---------- small screens ---------- */
 @media (max-width: 880px) {
-  .held { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 112px 0 40px; gap: 0; }
+  .held { grid-template-columns: minmax(0, 1fr); padding: 112px 0 92px; gap: 0; }
+  .weiter.unterwegs { opacity: 0; visibility: hidden; } /* phones: only a hint on the first page, later it would cover text */
   .gipfel { min-height: 0; padding: 56px 0 12px; }
   .gebirge { font-size: clamp(2.4rem, 12vw, 4.2rem); letter-spacing: .32em; text-indent: .32em; }
-  .peaked, .ueber, .buch { grid-template-columns: minmax(0, 1fr); }
+  .peaked, .ueber { grid-template-columns: minmax(0, 1fr); }
   .handy { width: min(250px, 80%); margin-top: 8px; }
-  .horizont { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .horizont li { padding-bottom: 0; }
-  .horizont li::after, .kamm-zeiger { display: none; }
-  .kamm { margin-top: 24px; }
-  .weg li { grid-template-columns: minmax(0, 1fr); }
-  .buch { gap: 18px; }
+  /* horizon: the landscape becomes a banner, the signs a list below it */
+  .horizont { padding-bottom: 72px; }
+  .horizont .abschnitt-kopf { max-width: none; }
+  .landschaft { position: relative; left: auto; translate: none; width: 100vw; height: auto; margin-left: calc(50% - 50vw); }
+  .kulisse { position: relative; height: 62vw; }
+  .ziele { position: static; display: grid; gap: 14px; width: var(--breite); margin: 8px auto 0; }
+  .ziel { position: relative; left: auto; bottom: auto; width: auto; translate: none; }
+  .ziel::before, .ziel::after { display: none; }
+  /* trail rules: one station below the other, the trail runs down the left */
+  .weg-linie { display: none; }
+  .weg { grid-template-columns: minmax(0, 1fr); }
+  .weg::before { content: ''; position: absolute; left: 11px; top: 30px; bottom: 30px; border-left: 2px dashed var(--blau-text); opacity: .55; }
+  .weg li { padding: 22px 0 22px 52px; }
+  .weg li::before { top: 26px; }
+  .weg li::after { display: none; }
+  .kontakt { flex-direction: column; align-items: stretch; }
+  .buch-kopf { flex: none; }
+  .buch { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .buch::before { inset: -10px; }
-  .seite { min-height: 0; }
   .seite.links, .seite.rechts { border-radius: 14px; background: var(--papier); }
   .eintraege { max-height: 380px; }
 }
@@ -404,20 +534,20 @@ blockquote { margin: 28px 0 24px; padding-left: 18px; border-left: 3px solid var
 @media (max-width: 520px) {
   h1 { font-size: clamp(3.2rem, 16vw, 4.6rem); }
   .kopf .knopf.klein { padding: 0 14px; }
-  .weg li { padding-left: 44px; }
-  .weg li + li::after { left: 44px; }
   .post .knopf { white-space: normal; text-align: center; }
 }
 
 /* ---------- more contrast when the system asks for it ---------- */
 @media (prefers-contrast: more) {
-  :root { --rand: rgba(26, 26, 46, .55); --leise: var(--text); --papier-linie: rgba(26, 26, 46, .6); }
+  :root { --rand: rgba(26, 26, 46, .55); --leise: var(--text); --text-2: var(--text); --papier-linie: rgba(26, 26, 46, .6); }
+  .lichtung::before { opacity: 1; }
   .gebirge { opacity: .4; }
 }
 
-/* ---------- calm mode ---------- */
+/* ---------- calm mode: pages still snap, but nothing flies ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  [data-zeige].wartet { opacity: 1; transform: none; }
+  [data-tiefe], .lage, .dunstband, .ziel { transform: none !important; opacity: 1 !important; }
+  .wartet .wm > span { transform: none; }
 }

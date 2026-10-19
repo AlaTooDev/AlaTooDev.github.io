@@ -9,15 +9,7 @@ const html = document.documentElement;
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const feinZeiger = matchMedia('(pointer: fine)').matches;
-window.karteLaeuft = true; // tells the safety net in index.html that the reveal will happen
-
-/* ---------- reveal sections when they scroll in ----------
-   Only what starts below the screen waits (.wartet); without this script nothing is ever hidden. */
-const beobachter = new IntersectionObserver(eintraege => eintraege.forEach(e => {
-  if (e.isIntersecting) { e.target.classList.remove('wartet'); beobachter.unobserve(e.target); }
-  else e.target.classList.add('wartet');
-}));
-$$('[data-zeige]').forEach(el => beobachter.observe(el));
+window.karteLaeuft = true; // tells the safety net in index.html that the map script runs (the page motion is in seiten.js)
 
 /* ---------- section titles: split into words that rise out of a mask (CSS .wm) ---------- */
 function teileWoerter(h) {
@@ -280,7 +272,9 @@ function starteKarte() {
     zeiger.staerke = ruhig ? 0 : zeiger.staerke + ((ziel.an ? 1 : 0) - zeiger.staerke) * .06;
 
     const k = Math.min(1, scrollY / (innerHeight * .9)), weich = k * k * (3 - 2 * k);
-    S.scroll = scrollY; S.zoom = 1 + .35 * weich;
+    // between two pages the camera lifts off and the lines light up; once a page sits, the map calms down behind the text
+    const unterwegs = ruhig ? 0 : Math.sin(Math.PI * fract(scrollY / innerHeight)) ** 2;
+    S.scroll = scrollY; S.zoom = (1 + .35 * weich) * (1 + .12 * unterwegs);
     S.mass = Math.min(460, Math.max(260, innerWidth * .3));
     S.mitteX = canvas.clientWidth / 2; S.mitteY = canvas.clientHeight / 2;
     const r = dev.getBoundingClientRect();
@@ -312,7 +306,7 @@ function starteKarte() {
     gl.uniform3f(u.uLichtung, t.left + t.width / 2, t.top + t.height / 2, Math.max(t.width, t.height) * .62);
     const auftakt = (S.zeit - .2) / 2.6; // intro wave from Dev; afterwards the whole map stays open
     gl.uniform1f(u.uAuftakt, ruhig || auftakt >= 1 ? 1e6 : Math.max(0, auftakt) ** .6 * (Math.hypot(innerWidth, innerHeight) + 400));
-    gl.uniform1f(u.uDimm, 1 - .45 * weich);
+    gl.uniform1f(u.uDimm, 1 - .5 * weich + .45 * unterwegs);
     gl.uniform1f(u.uFortschritt, Math.min(1, scrollY / Math.max(1, html.scrollHeight - innerHeight)));
     gl.uniform3f(u.uGrund, ...F.grund); gl.uniform3f(u.uLinie, ...F.linie); gl.uniform3f(u.uWarm, ...F.warm);
     gl.uniform1f(u.uDunkel, F.dunkel);
