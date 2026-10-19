@@ -85,7 +85,7 @@ main, .kopf, .fuss { position: relative; z-index: 2; }
 /* big screens: every place snaps into the screen; karte.js glides one place per wheel gesture.
    Phones and low windows scroll freely: there a place is often taller than the screen and snapping pulled readers back. */
 @media (min-width: 881px) and (min-height: 601px) {
-  html:has(main .ort + .ort) { scroll-snap-type: y mandatory; }
+  html:has(main .ort + .ort) { scroll-snap-type: y mandatory; scroll-padding-top: 0; } /* a place fills the screen; its own top padding clears the header */
   main .ort { scroll-snap-align: start; scroll-snap-stop: always; }
   .fuss { scroll-snap-align: end; }
 }
