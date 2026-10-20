@@ -2,331 +2,211 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- preview: no search engines until imprint and privacy are final (after the business registration) -->
 <meta name="robots" content="noindex, nofollow">
-<title>alatoo.dev · Jede App ein Gipfel</title>
-<meta name="description" content="Kleine, ehrliche Apps: fair bezahlt, ohne Datensammelei, mit Liebe gemacht. Die erste heißt Peaked, dein Bergtagebuch.">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#EEF4F1" media="(prefers-color-scheme: light)">
+<title>alatoo.dev – Jede App ein Gipfel</title>
+<meta name="description" content="alatoo.dev ist Vlads kleines App-Studio. Die erste App heißt Peaked: ein Bergtagebuch ohne Konto, ohne Abo und ohne Werbung.">
+<meta name="theme-color" content="#EAF2EE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#07120F" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="assets/baloo2-800.woff" as="font" type="font/woff" crossorigin>
-<link rel="preload" href="assets/cormorant-600-italic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="stil.css">
 <script>
 {
+  // the opening flight through the clouds plays once per visit, never with calm motion
   const h = document.documentElement;
-  h.classList.add('js');
-  // opening animation (seiten.js): only on a fresh visit, not when coming back from a subpage, jumping to a section or with calm mode
-  try { if (!location.hash && !document.referrer.startsWith(location.origin) && !matchMedia('(prefers-reduced-motion: reduce)').matches) h.classList.add('auftakt-an', 'auftakt-laeuft'); } catch {}
-  // safety nets: if karte.js never runs, show everything; the opening never blocks the page for long
-  setTimeout(() => window.karteLaeuft || h.classList.remove('js'), 2500);
-  setTimeout(() => h.classList.remove('auftakt-an', 'auftakt-laeuft'), 4500);
+  try { if (!location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches) h.classList.add('auftakt-an', 'auftakt-laeuft'); } catch {}
+  setTimeout(() => h.classList.remove('auftakt-an', 'auftakt-laeuft'), 4500); // safety net: never blocks the page for long
 }
 </script>
-<script src="dev.js" defer></script>
-<script src="karte.js" defer></script>
-<script src="gipfelbuch.js" defer></script>
-<script src="seiten.js" defer></script>
 </head>
 <body>
 
-<!-- opening animation (seiten.js): a drone flight down through the clouds onto Dev's summit.
-     Three cloud sheets, back to front, then the fog they start in and the name hanging in it. -->
+<!-- opening: a drone flight down through three cloud sheets onto Dev's summit (karte.js) -->
 <div class="auftakt" aria-hidden="true">
   <canvas class="auftakt-wolke"></canvas>
   <canvas class="auftakt-wolke"></canvas>
   <canvas class="auftakt-wolke"></canvas>
   <div class="auftakt-nebel"></div>
-  <p class="auftakt-marke">alatoo<em>.dev</em></p>
+  <p class="auftakt-marke">alatoo<b>.dev</b></p>
 </div>
 
-<a class="sprung" href="#apps">Zum Inhalt springen</a>
+<a class="sprung" href="#peaked">Zum Inhalt springen</a>
 
-<!-- The living contour map. Drawn by karte.js (WebGL); without it the CSS poster rings stay. -->
+<!-- the living contour map behind everything; karte.js draws it -->
 <canvas class="karte" aria-hidden="true"></canvas>
 <div class="hoehenmesser" aria-hidden="true"><span class="hm-wert">0</span> m</div>
 
 <header class="kopf">
-  <a class="marke" href="#start" aria-label="alatoo.dev, zum Seitenanfang">
+  <a class="marke" href="#start" aria-label="alatoo.dev, zum Anfang">
     <picture>
       <source srcset="assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
       <img src="assets/logo-waagerecht.svg" alt="" width="148" height="39">
     </picture>
   </a>
-  <!-- the green pill slides to the page you are on (seiten.js) -->
-  <span class="schlitten weg" aria-hidden="true"></span>
-  <!-- phones: the menu folds out of this button -->
-  <button class="menue-knopf" type="button" aria-expanded="false" aria-controls="menue" aria-label="Menü"><i></i><i></i></button>
-  <nav class="menue" id="menue" aria-label="Hauptmenü">
-    <a href="#apps"><small>01</small>Apps</a>
-    <a href="#horizont"><small>02</small>Horizont</a>
-    <a href="#wegregeln"><small>03</small>Wegregeln</a>
-    <a href="#ueber-mich"><small>04</small>Über mich</a>
-    <a href="#gipfelbuch"><small>05</small>Gipfelbuch</a>
+  <button class="legende-knopf" type="button" aria-expanded="false" aria-controls="legende">Legende</button>
+  <!-- the menu is the map's legend: each entry carries the symbol you meet on the map -->
+  <nav class="legende" id="legende" aria-label="Hauptmenü">
+    <span class="schlitten" aria-hidden="true"></span>
+    <a href="#peaked"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-gipfel" d="M10 4 16 15H4Z"/></svg>Peaked</a>
+    <a href="#regeln"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-weg" d="M2 15C7 14 9 6 18 5"/></svg>Regeln</a>
+    <a href="#ueber-mich"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><rect class="z-kartusche" x="3" y="5" width="14" height="10"/><rect class="z-kartusche" x="5" y="7" width="10" height="6"/></svg>Über mich</a>
+    <a href="#gipfelbuch"><svg class="zeichen" viewBox="0 0 20 20" aria-hidden="true"><path class="z-fahne" d="M6 17V3l9 3-9 3"/></svg>Gipfelbuch</a>
   </nav>
 </header>
 
-<!-- One section = one page (snap scrolling in stil.css). The stages on the right show where you are on the climb,
-     seiten.js marks the current one and moves the arrow at the bottom to the next page. -->
-<nav class="etappen" aria-label="Seiten">
-  <a href="#start" aria-current="true"><span>Start</span></a>
-  <a href="#apps"><span>Peaked</span></a>
-  <a href="#horizont"><span>Horizont</span></a>
-  <a href="#wegregeln"><span>Wegregeln</span></a>
-  <a href="#ueber-mich"><span>Über mich</span></a>
-  <a href="#gipfelbuch"><span>Gipfelbuch</span></a>
-</nav>
-<button class="weiter" type="button" aria-label="Weiter zur nächsten Seite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-
 <main>
 
-<!-- ============ 00 · HERO: the map, Dev on his summit ============
-     data-tiefe: how far a block lags behind while the page snaps in or out (0 = moves with the page) -->
-<section class="held" id="start" aria-labelledby="titel">
-  <div class="held-text lichtung" data-tiefe=".35">
-    <p class="etikett"><span class="punkt" aria-hidden="true"></span>alatoo.dev · kleine, ehrliche Apps</p>
-    <h1 id="titel"><span class="zeile"><span>Jede App</span></span><span class="zeile"><span>ein <em>Gipfel.</em></span></span></h1>
-    <p class="lead">Apps, die eine Sache richtig gut machen: fair bezahlt, ohne Datensammelei, mit Liebe gemacht. Der erste Gipfel heißt Peaked, dein Bergtagebuch.</p>
+<!-- ============ Start: Dev's summit ============ -->
+<section class="ort start" id="start" aria-labelledby="titel">
+  <div class="start-text ruhe">
+    <h1 id="titel" class="freigestellt">Jede App ein <em>Gipfel.</em></h1>
+    <p class="lead">Kleine Apps, die eine Sache richtig gut machen: fair bezahlt, ohne Datensammelei, mit Liebe gemacht. Der erste Gipfel heißt Peaked, dein Bergtagebuch.</p>
+    <p class="aktionen">
+      <a class="knopf" href="#peaked">Peaked ansehen</a>
+      <a class="leiser-link" href="#gipfelbuch">Ins Gipfelbuch</a>
+    </p>
   </div>
-
-  <div class="gipfel" data-tiefe=".12">
-    <!-- Range names on hiking maps are set in wide caps; Dev stands in front of it -->
-    <p class="gebirge" aria-hidden="true">Ala-Too</p>
-    <!-- Dev comes alive in dev.js; the SVG inside is only shown if that script never runs -->
+  <div class="gipfel">
+    <!-- range names on hiking maps are set in wide caps along the ridge -->
+    <svg class="gebirge" viewBox="0 0 600 220" aria-hidden="true">
+      <path id="grat" d="M70 190 Q300 20 530 190" fill="none"/>
+      <text><textPath href="#grat" startOffset="50%" text-anchor="middle">ALA – TOO</textPath></text>
+    </svg>
     <dev-figur class="dev">
       <svg viewBox="0 0 100 100" role="img" aria-label="Dev, ein kleiner Berg mit Kalpak und Kulleraugen">
-        <path d="M46.5 14.5 Q50 8 53.5 14.5 L88 80 Q91 90 80 90 L20 90 Q9 90 12 80 Z" fill="#16836C" stroke="#16836C" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M33.8 31.8 Q41.5 34.6 48.4 33.4 L50 38.5 L51.6 33.4 Q58.5 34.6 66.2 31.8 Q67.2 31.6 67.8 32.8 L71.2 38.6 Q71.8 40.6 69.8 41.2 Q60 43.8 50 43.6 Q40 43.8 30.2 41.2 Q28.2 40.6 28.8 38.6 L32.2 32.8 Q32.8 31.6 33.8 31.8 Z" fill="#16836C" stroke="#16836C" stroke-width="3" stroke-linejoin="round"/>
         <path d="M46.5 14.5 Q50 8 53.5 14.5 L88 80 Q91 90 80 90 L20 90 Q9 90 12 80 Z" fill="#22A68A"/>
         <path d="M50 11.25 Q51.75 11.25 53.5 14.5 L88 80 Q91 90 80 90 L78.5 90 L75.5 72 L70 58 L64 47 L59.55 36.4 L55.5 28 Z" fill="#16836C"/>
-        <path d="M47 15.6 Q50 10.2 53 15.6 L59.46 28 Q50 30.5 40.54 28 Z" fill="#F6C9A4"/><path d="M46.6 18.5 Q48 15.6 49.4 16.4 Q48.6 19 46.9 24.5 Q45.6 22 46.6 18.5 Z" fill="#FFE9D9"/><path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#FFFFFF"/>
-        <path d="M53.5 14.5 L66.9 40 L58.5 40 L52.6 18.5 Z" fill="#D3EEE6"/>
-        <path d="M49.6 17 L50.4 17 L50.4 33 L49.6 33 Z" fill="#1A1A2E"/>
+        <path d="M46.5 14.5 Q50 8 53.5 14.5 L66.9 40 L33.1 40 Z" fill="#FFFFFF"/>
         <path d="M33.8 31.8 Q41.5 34.6 48.4 33.4 L50 38.5 L51.6 33.4 Q58.5 34.6 66.2 31.8 Q67.2 31.6 67.8 32.8 L71.2 38.6 Q71.8 40.6 69.8 41.2 Q60 43.8 50 43.6 Q40 43.8 30.2 41.2 Q28.2 40.6 28.8 38.6 L32.2 32.8 Q32.8 31.6 33.8 31.8 Z" fill="#1A1A2E"/>
-        <g class="augen">
-          <g class="auge"><ellipse cx="39.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><circle cx="41.16" cy="58.77" r="1.77" fill="#FFFFFF"/><circle cx="37.94" cy="63.36" r="0.83" fill="#FFFFFF"/></g>
-          <g class="auge"><ellipse cx="60.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><circle cx="62.16" cy="58.77" r="1.77" fill="#FFFFFF"/><circle cx="58.94" cy="63.36" r="0.83" fill="#FFFFFF"/></g>
-        </g>
+        <ellipse cx="39.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/><ellipse cx="60.5" cy="61" rx="5.2" ry="6.2" fill="#1A1A2E"/>
         <path d="M46 69.5 Q48 72.7 50 69.5 Q52 72.7 54 69.5" fill="none" stroke="#1A1A2E" stroke-width="1.8" stroke-linecap="round"/>
         <ellipse cx="31" cy="69" rx="5.4" ry="3.2" fill="#FF8FB1"/><ellipse cx="69" cy="69" rx="5.4" ry="3.2" fill="#FF8FB1"/>
       </svg>
     </dev-figur>
-    <p class="gipfel-name"><em>Das ist Dev.</em></p>
+    <p class="gipfelzeichen dev-zeichen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4 16 15H4Z"/></svg><span><b>Dev</b> <span class="hoehe">3.100 m</span></span></p>
   </div>
-
-  <!-- labels for the peaks a visitor sets (the hidden easter egg); filled by karte.js -->
+  <!-- labels for the peaks a visitor sets with a click (the hidden game); filled by karte.js -->
   <div class="gipfel-marken" aria-hidden="true"></div>
 </section>
 
-<!-- ============ 01 · Apps: Peaked ============ -->
-<section class="abschnitt" id="apps" aria-labelledby="apps-titel">
-  <div class="abschnitt-kopf lichtung" data-tiefe=".2">
-    <p class="nummer">01 · Unsere Apps</p>
-    <h2 id="apps-titel">Unser erster <em>Gipfel.</em></h2>
+<!-- ============ Peaked: the first named summit ============ -->
+<section class="ort peaked" id="peaked" aria-labelledby="peaked-titel">
+  <div class="peaked-text ruhe">
+    <h2 id="peaked-titel" class="freigestellt">Peaked, dein <em>Bergtagebuch.</em></h2>
+    <p>Halte Gipfel, Touren, Fotos und Erinnerungen fest. Peaked braucht kein Konto: Alles bleibt auf deinem Gerät.</p>
+    <dl class="etikett">
+      <div><dt>Preis</dt><dd>4,99 € einmalig, kein Abo</dd></div>
+      <div><dt>Geräte</dt><dd>iPhone und Android</dd></div>
+      <div><dt>Deine Daten</dt><dd>bleiben auf deinem Handy</dd></div>
+      <div><dt>Stand</dt><dd>bald im Store</dd></div>
+    </dl>
+    <blockquote>Peaked plant nicht den nächsten Berg. Es bewahrt den, auf dem du schon warst.</blockquote>
+    <p class="aktionen"><a class="knopf" href="peaked/" data-dev-aufregend="Ooh, Peaked! Schau mal rein!">Mehr über Peaked</a></p>
   </div>
-
-  <!-- Peaked: the one app that exists. For a released app copy this <article> block. -->
-  <!-- data-dev-aufregend / data-dev-sagt: what Dev says when this comes into view or under the pointer -->
-  <article class="box peaked" data-tiefe=".45" data-dev-aufregend="Ooh, Peaked! Schau mal rein!">
-    <div class="peaked-text">
-      <div class="app-kopf">
-        <img src="assets/peaked-icon.png" alt="" width="56" height="56">
-        <p class="mono">Gipfel 01</p>
-        <span class="chip">Bald im Store</span>
-      </div>
-      <h3>Peaked</h3>
-      <p class="claim"><em>Dein Bergtagebuch.</em></p>
-      <p>Halte Gipfel, Touren, Fotos und Erinnerungen fest. Peaked braucht kein Konto: Alles bleibt auf deinem Gerät.</p>
-      <ul class="fakten">
-        <li class="stark">4,99 € einmalig</li>
-        <li>kein Abo</li>
-        <li>keine Werbung</li>
-        <li>ohne Konto</li>
-        <li>Android und iPhone</li>
-      </ul>
-      <blockquote>Peaked plant nicht den nächsten Berg. Es bewahrt den, auf dem du schon warst.</blockquote>
-      <a class="mehr" href="peaked/index.html">Mehr über Peaked <span aria-hidden="true">→</span></a>
-    </div>
-    <!-- the whole screenshot (1320 × 2868, iPhone), nothing cropped, so time and battery stay readable -->
+  <!-- the phone stands on its own summit; karte.js writes the facts along the contour lines around it and lets it tilt -->
+  <div class="peaked-gipfel handy-buehne">
     <div class="handy">
-      <picture>
-        <source srcset="assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)">
-        <img src="assets/peaked-logbuch.jpg" alt="Peaked: das Logbuch mit dem Watzmann als letzter Tour" width="506" height="1100" loading="lazy">
-      </picture>
+      <div class="bildschirm">
+        <picture>
+          <source srcset="assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="assets/peaked-logbuch.jpg" alt="Peaked: das Logbuch mit dem Watzmann als letzter Tour" width="506" height="1100" loading="lazy" draggable="false">
+        </picture>
+      </div>
     </div>
-  </article>
+  </div>
+  <svg class="ringschrift" aria-hidden="true"></svg>
+  <!-- the next app: an unnamed summit in the fog at the edge of the sheet -->
+  <p class="nebelgipfel" data-dev-sagt="Psst … das ist noch geheim."><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4 16 15H4Z"/></svg><span><b>Gipfel 02</b> liegt noch im Nebel. <a href="mailto:alatoodevv@gmail.com?subject=Gipfel%2002">Als Erstes davon hören</a></span></p>
 </section>
 
-<!-- ============ 02 · Horizont: the range as a layered relief model ============
-     Like a laser-cut contour model: the lines of the map rise layer by layer into three summits while the page snaps in.
-     seiten.js draws the layers and sets the pins; the cards below are the legend (data-gipfel = which summit).
-     The old horizon with the fog and the ridges is kept in Designs/hoehenlinien/archiv/runde3-horizont. -->
-<section class="abschnitt horizont" id="horizont" aria-labelledby="horizont-titel">
-  <div class="abschnitt-kopf lichtung" data-tiefe=".2">
-    <p class="nummer">02 · Horizont</p>
-    <h2 id="horizont-titel">Drei Gipfel, ein <em>Gebirge.</em></h2>
-    <p>Einer steht schon, einer wächst noch im Nebel, und einer wartet auf deine Idee.</p>
+<!-- ============ Regeln: a marked trail across the contours ============ -->
+<section class="ort regeln" id="regeln" aria-labelledby="regeln-titel">
+  <div class="regeln-kopf ruhe">
+    <h2 id="regeln-titel" class="freigestellt">Vier <em>Regeln</em> für jede App.</h2>
+    <p>Wie die Markierung am Wanderweg: kurz, klar und für jede App gleich.</p>
   </div>
-
-  <div class="relief" aria-hidden="true">
-    <div class="relief-kamera"><div class="relief-modell"><div class="relief-brett"></div></div></div>
-  </div>
-
-  <ol class="ziele" data-tiefe=".3">
-    <li class="ziel" data-gipfel="0">
-      <span class="ziel-fahne erreicht"></span>
-      <div>
-        <p class="mono">Gipfel 01 · erreicht</p>
-        <h3>Peaked</h3>
-        <p>Dein Bergtagebuch, bald für iPhone und Android. <a class="mehr" href="peaked/index.html">Mehr über Peaked <span aria-hidden="true">→</span></a></p>
-      </div>
-    </li>
-    <li class="ziel" data-gipfel="1" data-dev-sagt="Psst … das ist noch geheim.">
-      <span class="ziel-fahne nebel"></span>
-      <div>
-        <p class="mono">Gipfel 02 · im Aufstieg</p>
-        <h3>Noch im Nebel</h3>
-        <p>Die nächste App ist schon unterwegs. Was sie kann, verraten wir, wenn sich der Nebel lichtet. <a class="mehr" href="mailto:alatoodevv@gmail.com?subject=Gipfel%2002">Als Erstes davon hören <span aria-hidden="true">→</span></a></p>
-      </div>
-    </li>
-    <li class="ziel" data-gipfel="2" data-dev-sagt="Der hier könnte deiner sein!">
-      <span class="ziel-fahne frei"></span>
-      <div>
-        <p class="mono">Gipfel 03 · noch frei</p>
-        <h3>Deine Idee</h3>
-        <p>Dir fehlt eine App, die eine Sache richtig gut macht? Die Fahne ist noch frei. <a class="mehr" href="#gipfelbuch" data-idee>Idee ins Gipfelbuch <span aria-hidden="true">→</span></a></p>
-      </div>
-    </li>
-  </ol>
-</section>
-
-<!-- ============ 03 · Wegregeln: the trail climbs from rule to rule ============ -->
-<section class="abschnitt" id="wegregeln" aria-labelledby="regeln-titel">
-  <div class="abschnitt-kopf lichtung" data-tiefe=".2">
-    <p class="nummer">03 · Wegregeln</p>
-    <h2 id="regeln-titel">Vier Regeln für <em>jede&nbsp;App.</em></h2>
-    <p>Wie Schilder am Wanderweg: kurz, klar und für jede App gleich.</p>
-  </div>
-
-  <!-- One rule = one station, centered in its quarter. --n = its step on the climb. The altitude is decoration, the text is the promise. -->
-  <div class="weg-rahmen lichtung">
-    <svg class="weg-linie" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 116.7 L12.5 100 L37.5 66.7 L62.5 33.3 L87.5 0 L100 -16.7"/></svg>
+  <div class="weg-feld">
+    <svg class="weg-linie" aria-hidden="true"><path/></svg>
     <ol class="weg">
-      <li style="--n:0" data-tiefe=".25">
-        <span class="hoehe">1.200 m</span>
-        <h3>Was dir gehört, bleibt bei dir.</h3>
-        <p>Kein Konto, wo keins nötig ist. Deine Touren, Fotos und Notizen liegen auf deinem Handy, nicht auf unserem Server. Verkauft wird davon nichts, nie.</p>
-      </li>
-      <li style="--n:1" data-tiefe=".35">
-        <span class="hoehe">1.850 m</span>
-        <h3>Einmal zahlen. Fertig.</h3>
-        <p>Was uns nichts laufend kostet, kaufst du einmal. Kostet doch etwas laufend Geld, zum Beispiel KI, sagen wir das vorher und du kannst jederzeit kündigen.</p>
-      </li>
-      <li style="--n:2" data-tiefe=".45">
-        <span class="hoehe">2.400 m</span>
-        <h3>Eine Sache, richtig gut.</h3>
-        <p>Keine App für alles. Jede macht genau einen Job, macht ihn gut und lässt dich danach in Ruhe. Keine Werbung, keine nervigen Mitteilungen.</p>
-      </li>
-      <li style="--n:3" data-tiefe=".55">
-        <span class="hoehe">3.100 m</span>
-        <h3>Gemacht mit Liebe zum Detail.</h3>
-        <p>Schön genug, dass du gern wiederkommst. Und wer genau hinschaut, findet Dev irgendwo versteckt.</p>
-      </li>
+      <li class="ruhe"><span class="wegpunkt" aria-hidden="true"></span><span class="hoehe">1.200 m</span><h3>Was dir gehört, bleibt bei dir.</h3><p>Kein Konto, wo keins nötig ist. Deine Touren, Fotos und Notizen liegen auf deinem Handy, nicht auf unserem Server. Verkauft wird davon nichts, nie.</p></li>
+      <li class="ruhe"><span class="wegpunkt" aria-hidden="true"></span><span class="hoehe">1.850 m</span><h3>Einmal zahlen. Fertig.</h3><p>Was uns nichts laufend kostet, kaufst du einmal. Kostet doch etwas laufend Geld, zum Beispiel KI, sagen wir das vorher, und du kannst jederzeit kündigen.</p></li>
+      <li class="ruhe"><span class="wegpunkt" aria-hidden="true"></span><span class="hoehe">2.400 m</span><h3>Eine Sache, richtig gut.</h3><p>Keine App für alles. Jede macht genau einen Job, macht ihn gut und lässt dich danach in Ruhe. Keine Werbung, keine nervigen Mitteilungen.</p></li>
+      <li class="ruhe"><span class="wegpunkt" aria-hidden="true"></span><span class="hoehe">3.100 m</span><h3>Gemacht mit Liebe zum Detail.</h3><p>Schön genug, dass du gern wiederkommst. Und wer genau hinschaut, findet Dev irgendwo versteckt.</p></li>
     </ol>
   </div>
 </section>
 
-<!-- ============ 04 · Über mich ============ -->
-<section class="abschnitt" id="ueber-mich" aria-labelledby="ueber-titel">
-  <div class="ueber">
-    <div class="abschnitt-kopf lichtung" data-tiefe=".2">
-      <p class="nummer">04 · Über mich</p>
-      <h2 id="ueber-titel">Hi, ich bin <em>Vlad.</em></h2>
-      <p>alatoo.dev bin im Moment nur ich. Ich baue Apps, die ich selbst gern auf dem Handy hätte: ohne Anmeldung, ohne Abo-Falle und ohne dass im Hintergrund jemand mitliest.</p>
-      <p>Der Name kommt vom Ala-Too, einem Gebirge in Kirgisistan. Darum ist diese Seite eine Karte voller Höhenlinien, und jede App ist ein Gipfel darauf.</p>
-      <p>Und Dev? Der kleine Berg mit dem Filzhut begleitet mich. Er trägt einen Kalpak, wie man ihn in Kirgisistan trägt, und passt auf, dass keine App langweilig wird.</p>
-    </div>
-
-    <!-- Vlad's photo: put a square picture at assets/vlad.jpg and it shows up here. Until then the placeholder stays. -->
-    <figure class="foto">
-      <div class="foto-rahmen">
-        <svg class="foto-platzhalter" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="46" r="20"/><path d="M22 106c4-22 20-34 38-34s34 12 38 34"/></svg>
-        <img src="assets/vlad.jpg" alt="Vlad" width="480" height="480" loading="lazy" onerror="this.remove()">
+<!-- ============ Über mich: a map sheet ============ -->
+<section class="ort ueber" id="ueber-mich" aria-labelledby="ueber-titel">
+  <div class="kartusche blatt ruhe">
+    <div class="kartusche-innen">
+      <figure class="foto">
+        <!-- a square photo at assets/vlad.jpg replaces the placeholder (karte.js checks for it) -->
+        <div class="foto-rahmen" data-foto="assets/vlad.jpg">
+          <svg class="foto-platzhalter" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="46" r="20"/><path d="M22 106c4-22 20-34 38-34s34 12 38 34"/></svg>
+        </div>
+      </figure>
+      <div class="kartusche-text">
+        <h2 id="ueber-titel">Hi, ich bin <em>Vlad.</em></h2>
+        <p>alatoo.dev bin im Moment nur ich. Ich baue Apps, die ich selbst gern auf dem Handy hätte: ohne Anmeldung, ohne Abo-Falle und ohne dass im Hintergrund jemand mitliest.</p>
+        <p>Der Name kommt vom Ala-Too, einem Gebirge in Kirgisistan. Darum ist diese Seite eine Karte voller Höhenlinien, und jede App ist ein Gipfel darauf.</p>
+        <p>Und Dev? Der kleine Berg mit dem Filzhut begleitet mich. Er trägt einen Kalpak, wie man ihn in Kirgisistan trägt, und passt auf, dass keine App langweilig wird.</p>
       </div>
-      <figcaption><em>Vlad</em><span class="mono">Gründer · baut die Apps</span></figcaption>
-    </figure>
+    </div>
+    <!-- what every map sheet carries at the bottom: who drew it, the scale, the contour interval -->
+    <div class="blatt-fuss">
+      <span>Gezeichnet von Vlad, 2026</span>
+      <span class="massstab"><svg viewBox="0 0 120 14" aria-hidden="true"><path d="M1 9h118M1 4v10M31 6v6M61 4v10M91 6v6M119 4v10"/><rect x="1" y="7" width="30" height="4"/><rect x="61" y="7" width="30" height="4"/></svg>1 : 25 000</span>
+      <span>Höhenlinien alle 20 m</span>
+    </div>
   </div>
 </section>
 
-<!-- ============ 05 · Gipfelbuch ============
-     data-api: address of the guestbook server (Cloudflare Worker, see Designs/aufstieg/README.md).
-     Empty = preview: sample entries, nothing is saved. -->
-<section class="abschnitt kontakt" id="gipfelbuch" aria-labelledby="buch-titel" data-api="">
-  <div class="buch-kopf lichtung" data-tiefe=".2">
-    <p class="nummer">05 · Gipfelbuch</p>
-    <dev-figur class="dev-jubel" jubelt gruss="Trag dich ein!"><img src="assets/dev-jubel.svg" alt="" width="120" height="120"></dev-figur>
-    <h2 id="buch-titel">Du bist <em>oben.</em></h2>
-    <p>Wer auf einem Gipfel steht, trägt sich ins Gipfelbuch ein. Hinterlass einen Gruß oder eine Idee für die nächste App.</p>
-    <!-- the private alternative: e-mail -->
-    <div class="post">
-      <p><b>Lieber privat?</b> Schreib mir direkt. Ich lese jede Nachricht selbst.</p>
-      <!-- after the domain purchase: hallo@alatoo.dev -->
-      <a class="knopf" href="mailto:alatoodevv@gmail.com" data-dev-aufregend="Ich freu mich auf deine Nachricht!"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>alatoodevv@gmail.com</a>
-    </div>
+<!-- ============ Gipfelbuch: your greeting becomes a summit ============
+     data-api: address of the guestbook server (Cloudflare Worker, see Designs/gipfelbuch-worker). Empty = preview, nothing is saved. -->
+<section class="ort buch" id="gipfelbuch" aria-labelledby="buch-titel" data-api="">
+  <div class="buch-text ruhe">
+    <h2 id="buch-titel" class="freigestellt">Setz deinen <em>Gipfel.</em></h2>
+    <p>Wer oben ist, trägt sich ins Gipfelbuch ein. Dein Gruß wird ein kleiner Gipfel auf dieser Karte, mit deinem Namen dran.</p>
+    <p class="privat"><b>Lieber privat?</b> Schreib mir direkt an <a href="mailto:alatoodevv@gmail.com">alatoodevv@gmail.com</a>. Ich lese jede Nachricht selbst.</p>
+    <h3 class="eintraege-titel">Schon oben</h3>
+    <ol class="eintraege" aria-live="polite"></ol>
   </div>
-
-  <div class="buch" data-tiefe=".4">
-    <!-- left page: the entries -->
-    <div class="seite links">
-      <p class="kopfzeile"><span>Gipfelbuch</span><span>alatoo.dev</span></p>
-      <h3 class="buch-titel">Einträge</h3>
-      <ol class="eintraege" aria-live="polite" aria-label="Einträge im Gipfelbuch" tabindex="0"><li class="leer">Einträge werden geladen …</li></ol>
-      <svg class="buch-stempel" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="stempel-kreis" d="M60 60 m-43 0 a43 43 0 1 1 86 0 a43 43 0 1 1 -86 0"/></defs><circle cx="60" cy="60" r="56"/><circle cx="60" cy="60" r="31"/><text><textPath href="#stempel-kreis">ALATOO.DEV · GIPFELBUCH · ALA-TOO ·</textPath></text><path d="M44 72 L60 46 L76 72 Z M54 56 L60 61 L66 56"/></svg>
-      <p class="folio" aria-hidden="true">— 1 —</p>
+  <form class="eintragen blatt ruhe" novalidate>
+    <fieldset class="art">
+      <legend>Was möchtest du hinterlassen?</legend>
+      <label><input type="radio" name="art" value="gruss" checked><span>Einen Gruß</span></label>
+      <label><input type="radio" name="art" value="idee"><span>Eine App-Idee</span></label>
+    </fieldset>
+    <label class="feld" for="gb-name">Dein Name</label>
+    <input id="gb-name" name="name" type="text" maxlength="40" required autocomplete="nickname" placeholder="z. B. Anna aus Ulm">
+    <label class="feld" for="gb-text">Deine Nachricht <span class="zaehler">0 / 490</span></label>
+    <textarea id="gb-text" name="text" maxlength="490" required rows="3"></textarea>
+    <label class="falle" aria-hidden="true">Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+    <label class="haken"><input type="checkbox" name="einverstanden" required> Mein Name und meine Nachricht dürfen hier öffentlich stehen.</label>
+    <div class="absenden">
+      <button class="knopf" type="submit">Gipfel setzen</button>
+      <p class="status" role="status"></p>
     </div>
-
-    <!-- right page: write an entry -->
-    <form class="seite rechts eintragen" novalidate>
-      <p class="kopfzeile"><span>Seite 2</span><span>Neuer Eintrag</span></p>
-      <h3 class="buch-titel">Trag dich ein</h3>
-      <fieldset class="art">
-        <legend>Was möchtest du hinterlassen?</legend>
-        <label><input type="radio" name="art" value="gruss" checked><span>Einen Gruß</span></label>
-        <label><input type="radio" name="art" value="idee"><span>Eine App-Idee</span></label>
-      </fieldset>
-      <label class="feld" for="gb-name">Dein Name</label>
-      <input id="gb-name" name="name" type="text" maxlength="40" required autocomplete="nickname" placeholder="z. B. Anna aus Ulm">
-      <label class="feld" for="gb-text">Deine Nachricht <span class="zaehler" aria-live="off">0 / 490</span></label>
-      <textarea id="gb-text" name="text" maxlength="490" required rows="4"></textarea>
-      <label class="haken"><input type="checkbox" name="einverstanden" required> Mein Name und meine Nachricht dürfen hier öffentlich stehen.</label>
-      <div class="honig" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
-      <div class="absenden">
-        <button class="stempel" type="submit"><span>Eintragen</span></button>
-        <p class="status" role="status"></p>
-      </div>
-      <p class="folio" aria-hidden="true">— 2 —</p>
-    </form>
-  </div>
+    <p class="vorschau-hinweis">Vorschau: Dein Gipfel erscheint auf der Karte, gespeichert wird noch nichts.</p>
+    <p class="vorschau-hinweis echt" hidden>Ich lese jeden Eintrag, bevor er hier erscheint. Mehr dazu im <a href="datenschutz.html">Datenschutz</a>.</p>
+  </form>
+  <!-- labels of the visitors' summits around the book; filled by karte.js -->
+  <div class="besucher-marken" aria-hidden="true"></div>
 </section>
 
 </main>
 
 <footer class="fuss">
-  <picture>
-    <source srcset="assets/logo-waagerecht-dunkel.svg" media="(prefers-color-scheme: dark)">
-    <img src="assets/logo-waagerecht.svg" alt="alatoo.dev" width="122" height="32">
-  </picture>
-  <nav aria-label="Rechtliches">
-    <a href="peaked/index.html">Peaked</a>
-    <a href="peaked/datenschutz.html">Datenschutz</a>
-    <a href="impressum.html">Impressum</a>
-  </nav>
-  <p>© 2026 alatoo.dev · keine Cookies, kein Tracking</p>
+  <nav aria-label="Weitere Seiten"><a href="peaked/">Peaked</a><a href="peaked/hilfe.html">Hilfe</a><a href="datenschutz.html">Datenschutz</a><a href="impressum.html">Impressum</a></nav>
+  <p>© 2026 alatoo.dev, keine Cookies, kein Tracking</p>
 </footer>
 
-<!-- small Dev at the bottom right, while neither big Dev is in view -->
+<!-- small Dev at the bottom right while the big one is out of view -->
 <dev-figur class="begleiter" begleiter stumm></dev-figur>
 
+<script src="dev.js"></script>
+<script src="karte.js"></script>
 </body>
 </html>

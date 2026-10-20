@@ -1,622 +1,399 @@
-/* alatoo.dev "Höhenlinien": a living contour map, Dev on his summit. One section = one page; scrolling is the climb. */
+/* alatoo.dev "Linien": the map is the page. Everything follows the rules of a hiking map: contour lines, labels that sit
+   in the lines, summit marks with heights, a marked trail, the legend as menu and the cartouche at the bottom.
+   No cards, glass, paper or 3D models floating above the map. */
 
 @font-face { font-family: 'Baloo 2'; src: url(assets/baloo2-800.woff) format('woff'); font-weight: 800; font-display: swap; }
-@font-face { font-family: 'Cormorant'; src: url(assets/cormorant-600-italic.woff2) format('woff2'); font-weight: 600; font-style: italic; font-display: swap; }
-@font-face { font-family: 'Cormorant'; src: url(assets/cormorant-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
 
-/* ---------- colors: change here, the map (karte.js) reads the --karte-* values too ----------
-   Contrast (WCAG): text tokens are at least 4.5:1 on --grund and on white; buttons use --knopf, not --blau.
-   Running text uses --text-2 (11:1), not --leise: over the moving lines the softer grey was hard to read. */
+/* ---------- colors: change here, the map (karte.js) reads the --karte-* and --wolke-* values too ----------
+   Contrast (WCAG): --text-2, --leise and --linie-text reach at least 4.5:1 on --grund; --aktion carries white text at 7:1. */
 :root {
   --grund: #EAF2EE;
-  --grund-2: #D8E9E1;
-  --flaeche: rgba(255, 255, 255, .94);
-  --flaeche-fest: #FFFFFF;
-  --rand: rgba(14, 80, 66, .22);
   --text: #1A1A2E;
-  --text-2: #24332D;         /* running text */
-  --leise: #3F524A;          /* small labels only */
-  --blau: #22A68A;           /* Jade for shapes and fills, never for small text */
-  --blau-text: #0E6F5C;      /* Jade for text: 5.5:1 on --grund */
-  --knopf: #12735F;          /* button background, white text 5.8:1 */
-  --knopf-hover: #0E6F5C;
-  --knopf-text: #FFFFFF;
-  --wange: #FF8FB1;
-  --wange-text: #B42357;
-  --fokus: #B42357;
-  --schatten: 0 30px 70px -40px rgba(26, 26, 46, .4);
-  /* paper (guestbook, trail signs) stays light in both themes, so it has its own ink */
-  --papier: #FBF8F0;
-  --papier-2: #F2ECDD;
-  --tinte: #1A1A2E;
-  --tinte-leise: #5B5446;
-  --tinte-akzent: #B42357;   /* 5.2:1 on both papers */
-  --tinte-gruen: #0E6F5C;
-  --papier-linie: rgba(91, 84, 70, .28);
-  --einband: #16836C;
-  --nebel: #FFFFFF;
-  --wolke-licht: #FFFFFF;     /* the opening's clouds: lit tops, shaded undersides, the fog they start in */
-  --wolke-schatten: #B3CCC2;
-  --wolke-grund: #F4F9F6;
-  /* the horizon: ridges from far (1) to near (5) */
-  --lage-1: #D3E6DD;
-  --lage-2: #AFD5C6;
-  --lage-3: #78BBA5;
-  --lage-4: #349A81;
-  --lage-5: #12735F;
-  --schnee: #FFFFFF;
+  --text-2: #24332D;
+  --leise: #3D5149;
+  --linie-text: #0E6F5C;          /* jade for text and labels: 5.5:1 */
+  --rand: rgb(22 131 108 / .42);
+  --warm: #E0457B;                /* alpenglow: summits, the trail, the one action */
+  --aktion: #B42357;
+  --aktion-text: #FFFFFF;
+  --feld: #F7FAF8;
   --karte-grund: #EAF2EE;
   --karte-linie: #16836C;
   --karte-warm: #E0457B;
+  --karte-nebel: #F4F9F6;
   --karte-dunkel: 0;
-
-  --display: 'Baloo 2', ui-rounded, system-ui, sans-serif;
-  --serif: 'Cormorant', Georgia, serif;
-  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --breite: min(1240px, calc(100% - 40px));
+  --wolke-licht: #FFFFFF;
+  --wolke-schatten: #B3CCC2;
+  --wolke-grund: #F4F9F6;
+  --display: 'Baloo 2', system-ui, sans-serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
-    --grund: #07120F;
-    --grund-2: #103229;
-    --flaeche: rgba(12, 30, 26, .9);
-    --flaeche-fest: #0E1E1A;
-    --rand: rgba(95, 208, 181, .24);
-    --text: #F4F6FA;
-    --text-2: #D6E4DE;
-    --leise: #B4CBC2;
-    --blau-text: #5FD0B5;
-    --knopf: #5FD0B5;
-    --knopf-hover: #7FDCC5;
-    --knopf-text: #07120F;
-    --wange-text: #FF8FB1;
-    --fokus: #FF8FB1;
-    --schatten: 0 40px 90px -40px rgba(0, 0, 0, .7);
-    --papier: #EFE9DA;
-    --papier-2: #E2DAC6;
-    --einband: #103229;
-    --nebel: #3D5A51;
-    --wolke-licht: #5A7A6F;
-    --wolke-schatten: #1C332C;
-    --wolke-grund: #2B453E;
-    --lage-1: #24493F;
-    --lage-2: #1B3C34;
-    --lage-3: #142F29;
-    --lage-4: #0E241F;
-    --lage-5: #091915;
-    --schnee: #CFE3DB;
-    --karte-grund: #07120F;
-    --karte-linie: #5FD0B5;
-    --karte-warm: #FF8FB1;
-    --karte-dunkel: 1;
+  :root:not([data-theme="light"]) {
+    --grund: #07120F; --text: #F4F6FA; --text-2: #D6E4DE; --leise: #A9C0B8; --linie-text: #6FD8BE;
+    --rand: rgb(95 208 181 / .42); --warm: #FF8FB1; --aktion: #FF8FB1; --aktion-text: #1A1A2E; --feld: #0C1B17;
+    --karte-grund: #07120F; --karte-linie: #5FD0B5; --karte-warm: #FF8FB1; --karte-nebel: #1A2C27; --karte-dunkel: 1;
+    --wolke-licht: #5A7A6F; --wolke-schatten: #1C332C; --wolke-grund: #2B453E;
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --grund: #07120F; --text: #F4F6FA; --text-2: #D6E4DE; --leise: #A9C0B8; --linie-text: #6FD8BE;
+  --rand: rgb(95 208 181 / .42); --warm: #FF8FB1; --aktion: #FF8FB1; --aktion-text: #1A1A2E; --feld: #0C1B17;
+  --karte-grund: #07120F; --karte-linie: #5FD0B5; --karte-warm: #FF8FB1; --karte-nebel: #1A2C27; --karte-dunkel: 1;
+  --wolke-licht: #5A7A6F; --wolke-schatten: #1C332C; --wolke-grund: #2B453E;
+  color-scheme: dark;
 }
 
 /* ---------- base ---------- */
-*, *::before, *::after { box-sizing: border-box; }
-/* every page snaps into place; a fast flick still stops at the next page.
-   Phones and very low windows scroll freely: their pages are taller than the screen, and even a gentle
-   proximity snap kept pulling the reader back to the start of a page (Vlad on his phone, round 5). */
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-@media (max-width: 880px), (max-height: 600px) { html { scroll-snap-type: none; } }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; overflow-x: hidden;
-  background: radial-gradient(1100px 760px at 72% 38%, var(--grund-2), var(--grund) 72%) var(--grund);
-  color: var(--text); font: 400 1.0625rem/1.65 var(--sans);
-  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  margin: 0; background: var(--grund); color: var(--text);
+  font: 400 1.0625rem/1.62 var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: clip;
 }
-/* poster: CSS contour rings until the WebGL map is ready (and for good if it never is) */
-body::before {
-  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: repeating-radial-gradient(circle at 72% 44%, transparent 0 24px, var(--rand) 24px 25.5px);
-  -webkit-mask-image: radial-gradient(circle at 72% 44%, #000 0 18%, transparent 60%);
-          mask-image: radial-gradient(circle at 72% 44%, #000 0 18%, transparent 60%);
-  transition: opacity 1.2s ease;
-}
-.karte-an body::before { opacity: 0; }
-.karte { position: fixed; left: 0; top: 0; width: 100%; height: 100lvh; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
-.karte-an .karte { opacity: 1; }
-main, .fuss { position: relative; z-index: 1; }
-main { overflow-x: clip; }
-main > section { position: relative; min-height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; }
-img { max-width: 100%; }
-a { color: inherit; }
-em { font-family: var(--serif); font-style: italic; font-weight: 600; }
-:focus-visible { outline: 3px solid var(--fokus); outline-offset: 3px; border-radius: 4px; }
-.sprung { position: absolute; z-index: 50; left: 16px; top: -80px; padding: 12px 18px; border-radius: 12px; background: var(--text); color: var(--grund); font-weight: 700; text-decoration: none; }
-.sprung:focus { top: calc(12px + env(safe-area-inset-top, 0px)); }
+::selection { background: var(--linie-text); color: var(--grund); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--linie-text); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+a:hover { color: var(--text); }
+:focus-visible { outline: 3px solid var(--warm); outline-offset: 3px; border-radius: 6px; }
+.sprung { position: absolute; z-index: 60; left: 16px; top: -80px; padding: 12px 18px; border-radius: 12px; background: var(--text); color: var(--grund); font-weight: 700; text-decoration: none; }
+.sprung:focus { top: 16px; }
+.sprung:hover { color: var(--grund); }
 
-/* a clearing in the map behind running text: the lines fade out, the text stands on calm ground */
-.lichtung { position: relative; isolation: isolate; }
-.lichtung::before {
-  content: ''; position: absolute; z-index: -1; inset: 6% 3%; border-radius: 48px; pointer-events: none;
-  background: var(--grund); box-shadow: 0 0 60px 46px var(--grund); opacity: .84;
+/* the map sits behind everything */
+.karte { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+main, .kopf, .fuss { position: relative; z-index: 2; }
+
+/* map lettering: the lines stop around the letters, like printed labels on a contour map (a halo in ground color) */
+@supports (paint-order: stroke) { .freigestellt { -webkit-text-stroke: .17em var(--grund); paint-order: stroke fill; } }
+/* one green word per heading, like the green labels a hiking map uses for forests and meadows (Vlad, round 7) */
+.freigestellt em, h1 em, h2 em { font-style: normal; color: var(--linie-text); }
+/* a very light fog behind every text block: the map stays visible, the text reads calmer (Vlad, round 7) */
+.ruhe { position: relative; isolation: isolate; }
+.ruhe::before {
+  content: ""; position: absolute; z-index: -1; inset: -34px -48px; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--grund) 78%, transparent), color-mix(in srgb, var(--grund) 52%, transparent) 62%, transparent);
+}
+.blatt.ruhe::before { display: none; }
+
+/* big screens: every place snaps into the screen; karte.js glides one place per wheel gesture.
+   Phones and low windows scroll freely: there a place is often taller than the screen and snapping pulled readers back. */
+@media (min-width: 881px) and (min-height: 601px) {
+  html:has(main .ort + .ort) { scroll-snap-type: y mandatory; scroll-padding-top: 0; } /* a place fills the screen; its own top padding clears the header */
+  main .ort { scroll-snap-align: start; scroll-snap-stop: always; }
+  .fuss { scroll-snap-align: end; }
 }
 
-/* ---------- moving between pages (seiten.js sets --ein/--aus on each page: 0 = in place, 1 = a screen away) ----------
-   Blocks with data-tiefe lag behind by their depth: arriving they rise one after another, leaving they sink back into the map. */
-[data-tiefe] {
-  transform: translate3d(0, calc((var(--ein, 0) * 34vh + var(--aus, 0) * 16vh) * var(--d, .3)), 0) scale(calc(1 - var(--aus, 0) * .05));
-  opacity: calc(1 - var(--ein, 0) * 1.3 - var(--aus, 0) * 1.4);
-}
-
-/* ---------- header ---------- */
+/* ---------- header: logo and the legend ---------- */
 .kopf {
-  position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: 50%; translate: -50% 0; width: min(1240px, calc(100% - 24px));
-  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 18px; border-radius: 999px;
-  background: var(--flaeche); border: 1px solid var(--rand); box-shadow: 0 10px 30px -20px rgba(26, 26, 46, .45);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  position: fixed; z-index: 40; left: 0; right: 0; top: env(safe-area-inset-top, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));
 }
-.marke { display: flex; margin-right: auto; border-radius: 8px; }
-.marke img { display: block; height: 32px; width: auto; }
-.menue { display: flex; gap: 2px; }
-.menue a { position: relative; z-index: 1; padding: 12px 14px; border-radius: 999px; text-decoration: none; font: 600 .9375rem/1 var(--sans); transition: color .35s; }
-.menue a:hover { background: var(--rand); }
-.menue a[aria-current] { color: var(--knopf-text); background: transparent; }
-.menue small, .menue-knopf { display: none; } /* numbers and the round button only on phones */
-/* the green pill under the current page's link. seiten.js sets its edges; the leading edge moves first, the other follows,
-   so it stretches like a caterpillar on the way */
-.schlitten {
-  position: absolute; z-index: 0; border-radius: 999px; background: var(--knopf);
-  box-shadow: 0 10px 22px -12px rgba(18, 115, 95, .9), inset 0 1px 0 rgba(255, 255, 255, .25);
-  transition-property: left, right, top, bottom, opacity, scale;
-  transition-duration: .5s, .5s, .4s, .4s, .3s, .45s;
-  transition-timing-function: cubic-bezier(.65, 0, .25, 1), cubic-bezier(.65, 0, .25, 1), ease, ease, ease, cubic-bezier(.3, 1.6, .5, 1);
+@media (min-width: 900px) { .kopf { padding-inline: clamp(24px, 4vw, 56px); } }
+.marke { display: block; line-height: 0; padding: 6px 8px; margin-left: -8px; border-radius: 10px; background: var(--grund); }
+.marke img { width: clamp(118px, 11vw, 148px); height: auto; }
+.legende {
+  position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 999px;
+  background: var(--grund); border: 1px solid var(--rand);
 }
-.schlitten.vor { transition-delay: .12s, 0s, 0s, 0s, 0s, 0s; }
-.schlitten.zurueck { transition-delay: 0s, .12s, 0s, 0s, 0s, 0s; }
-.schlitten.weg { opacity: 0; scale: .5; }
+.legende a {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 11px; border-radius: 999px;
+  color: var(--text); text-decoration: none; font: 600 .9375rem/1 var(--sans); white-space: nowrap; transition: color .35s;
+}
+.legende a.hier { color: var(--grund); }
+.schlitten { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: 999px; background: var(--linie-text); opacity: 0; transition: transform .5s cubic-bezier(.22, 1, .36, 1), width .5s cubic-bezier(.22, 1, .36, 1), opacity .3s; }
+.zeichen { width: 18px; height: 18px; flex: none; overflow: visible; }
+.z-gipfel { fill: currentColor; }
+.z-weg { fill: none; stroke: var(--warm); stroke-width: 2.4; stroke-dasharray: 3.2 2.6; stroke-linecap: round; }
+.z-kartusche { fill: none; stroke: currentColor; stroke-width: 1.4; }
+.z-fahne { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.legende-knopf {
+  display: none; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--rand); background: var(--grund);
+  color: var(--text); font: 700 .9375rem/1 var(--sans); cursor: pointer;
+}
+@media (max-width: 759px) {
+  .legende-knopf { display: block; }
+  .legende {
+    position: absolute; top: calc(100% - 4px); right: max(16px, env(safe-area-inset-right, 0px)); flex-direction: column; gap: 0;
+    border-radius: 18px; padding: 8px; min-width: 210px; box-shadow: 0 18px 40px -18px rgb(10 30 24 / .45);
+    visibility: hidden; opacity: 0; transform: translateY(-8px); transition: opacity .25s, transform .25s, visibility .25s;
+  }
+  .kopf.offen .legende { visibility: visible; opacity: 1; transform: none; }
+  .legende a { padding: 13px 14px; border-radius: 12px; }
+  .legende a.hier { background: var(--linie-text); }
+  .schlitten { display: none; }
+}
 
-/* ---------- stages of the climb (right edge) and the hopping arrow (bottom) ---------- */
-.etappen {
-  position: fixed; z-index: 20; right: max(14px, env(safe-area-inset-right, 0px)); top: 50%; translate: 0 -50%;
-  display: grid; gap: 4px; padding: 6px 0;
+/* ---------- places on the map ---------- */
+.ort {
+  position: relative; max-width: 1240px; margin: 0 auto; min-height: 100svh; overflow-x: clip; /* wide labels (the range name, ring text) never widen the page */
+  padding-block: clamp(104px, 15vh, 150px) clamp(56px, 9vh, 104px);
+  display: grid; align-content: center; gap: clamp(28px, 5vh, 56px);
 }
-/* the axis: line, dots and the peak share one center, 16px from the right edge */
-.etappen::before { content: ''; position: absolute; right: 15px; top: 20px; bottom: 20px; border-right: 2px dotted var(--leise); opacity: .55; }
-.etappen a { position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-height: 32px; padding-right: 8px; text-decoration: none; border-radius: 999px; }
-.etappen a::after { /* the waypoint (a 16px box, drawn smaller); the current one becomes a little peak */
-  content: ''; flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--grund); border: 2.6px solid var(--leise); transform: scale(.75);
-  transition: transform .4s cubic-bezier(.3, 1.6, .5, 1), background .3s, border-color .3s, border-radius .3s, clip-path .3s;
-}
-.etappen span {
-  padding: 5px 10px; border-radius: 999px; background: var(--text); color: var(--grund); font: 600 .75rem/1 var(--mono); letter-spacing: .06em; white-space: nowrap;
-  opacity: 0; translate: 8px 0; transition: opacity .25s, translate .3s; pointer-events: none;
-}
-.etappen a:hover span, .etappen a:focus-visible span, .etappen a[aria-current] span { opacity: 1; translate: 0 0; }
-.etappen a[aria-current] span { background: transparent; color: var(--text); padding-inline: 0; }
-.etappen a[aria-current]::after { border: 0; border-radius: 0; background: var(--wange-text); clip-path: polygon(50% 6%, 100% 94%, 0 94%); transform: scale(1.1); }
-.etappen a:hover::after { transform: scale(1); }
-
-.weiter {
-  position: fixed; z-index: 20; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
-  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--rand); border-radius: 50%;
-  background: var(--flaeche); color: var(--text); cursor: pointer; transition: opacity .4s, visibility .4s;
-}
-.weiter svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; animation: huepfen 2s cubic-bezier(.5, 0, .5, 1) infinite; }
-@keyframes huepfen { 0%, 60%, 100% { transform: translateY(-2px); } 30% { transform: translateY(4px); } 45% { transform: translateY(0); } }
-.weiter:hover { background: var(--text); color: var(--grund); }
-.weiter.weg { opacity: 0; visibility: hidden; }
-
-/* ---------- buttons ---------- */
+h1 { font: 800 clamp(3rem, 7.4vw, 6.4rem)/.95 var(--display); letter-spacing: -0.03em; }
+h2 { font: 800 clamp(2.2rem, 4.6vw, 4rem)/1 var(--display); letter-spacing: -0.025em; }
+h3 { font: 700 1.125rem/1.3 var(--sans); }
+.lead { font-size: clamp(1.15rem, 1.5vw, 1.32rem); font-weight: 500; color: var(--text-2); max-width: 31em; }
+:where(.ort p) { color: var(--text-2); max-width: 34em; }
+.aktionen { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 26px; }
 .knopf {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px;
-  border: 1px solid transparent; border-radius: 999px; background: var(--knopf); color: var(--knopf-text);
-  font: 700 1rem/1 var(--sans); text-decoration: none; white-space: nowrap;
-  box-shadow: 0 14px 30px -14px rgba(18, 115, 95, .9), inset 0 1px 0 rgba(255, 255, 255, .25);
-  transition: transform .25s cubic-bezier(.3, 1.4, .5, 1), background .2s, box-shadow .25s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border: 0; border-radius: 999px;
+  background: var(--aktion); color: var(--aktion-text); font: 700 1.0625rem/1 var(--sans); text-decoration: none; cursor: pointer;
+  box-shadow: 0 10px 20px -12px rgb(5 18 14 / .5); transition: transform .2s cubic-bezier(.22, 1, .36, 1), box-shadow .2s;
 }
-.knopf:hover { transform: translateY(-2px); background: var(--knopf-hover); }
-.knopf.klein { min-height: 44px; padding: 0 18px; font-size: .9375rem; }
-.knopf svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.knopf:hover { color: var(--aktion-text); transform: translateY(-2px); box-shadow: 0 14px 24px -12px rgb(5 18 14 / .55); }
+.knopf:active { transform: scale(.97); transition-duration: .1s; }
+.leiser-link { font-weight: 600; }
+.hoehe { font-variant-numeric: tabular-nums; }
 
-/* ---------- 00 hero ---------- */
-.held {
-  width: var(--breite); margin: 0 auto; padding: 120px 0 88px;
-  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); align-items: center; gap: 24px;
-  cursor: crosshair;
-}
-.held a, .held button { cursor: pointer; }
-.held-text { z-index: 2; cursor: auto; }
-.held-text.lichtung::before { opacity: .6; }
-.etikett {
-  display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 10px 15px; border-radius: 999px;
-  background: var(--flaeche); border: 1px solid var(--rand);
-  font: 600 .78rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--blau-text);
-}
-.punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--wange-text); box-shadow: 0 0 0 0 rgba(255, 143, 177, .6); animation: puls 2.6s infinite; }
-@keyframes puls { 70% { box-shadow: 0 0 0 9px rgba(255, 143, 177, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 143, 177, 0); } }
+/* summit mark: triangle, name, height, set like a map label */
+.gipfelzeichen { display: flex; align-items: center; gap: 8px; font-size: .9375rem; color: var(--text); text-shadow: 0 0 3px var(--grund), 0 0 3px var(--grund), 0 0 6px var(--grund); }
+.gipfelzeichen svg { width: 16px; height: 16px; flex: none; fill: var(--text); }
+.gipfelzeichen .hoehe { color: var(--leise); font-weight: 600; }
 
-h1 { margin: 26px 0 24px; font: 800 clamp(3.3rem, 8.6vw, 8rem)/.92 var(--display); letter-spacing: -.035em; }
-h1 .zeile { display: block; overflow: hidden; padding: .06em 0 .14em; margin-bottom: -.14em; }
-h1 .zeile > span { display: inline-block; }
-h1 em, h2 em { font-size: 1.12em; letter-spacing: -.01em; color: var(--blau-text); }
-.js h1 .zeile > span { animation: steigen 1.15s cubic-bezier(.2, .8, .2, 1) both; }
-.js h1 .zeile + .zeile > span { animation-delay: .12s; }
-@keyframes steigen { from { transform: translateY(112%); } }
-.lead { max-width: 31em; margin: 0; color: var(--text); font-size: clamp(1.15rem, 1.4vw, 1.3rem); font-weight: 500; }
-
-.gipfel { position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; min-height: 440px; }
-.gebirge {
-  position: absolute; z-index: 0; left: 50%; top: 50%; translate: -50% -62%; margin: 0; pointer-events: none;
-  font: 500 clamp(2.6rem, 5.2vw, 5.4rem)/1 var(--serif); letter-spacing: .42em; text-indent: .42em; text-transform: uppercase;
-  white-space: nowrap; color: var(--blau-text); opacity: .26;
+/* ---------- start: Dev's summit ---------- */
+.start { grid-template-columns: minmax(0, 1fr); align-items: center; }
+.start-text { display: grid; gap: clamp(18px, 3vh, 28px); justify-items: start; }
+.gipfel { position: relative; justify-self: center; display: grid; justify-items: center; gap: 10px; width: clamp(150px, 40vw, 250px); }
+@media (min-width: 900px) {
+  .start { grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); }
+  .gipfel { margin-top: 40px; }
 }
-/* Dev himself lives in dev.js (<dev-figur>); here only size, bubble colors and the no-JS picture */
+/* the range name arches over Dev's summit, like range names follow the ridge on a map; dark and with a wide halo so it reads */
+.gebirge { position: absolute; left: 50%; top: -30%; width: 230%; translate: -50% 0; overflow: visible; pointer-events: none; z-index: 0; }
+.gebirge text { font: 750 27px var(--sans); letter-spacing: .5em; fill: var(--text-2); stroke: var(--grund); stroke-width: 9px; stroke-linejoin: round; paint-order: stroke fill; }
 dev-figur { display: block; aspect-ratio: 1; --dev-blase: var(--text); --dev-blase-text: var(--grund); --dev-schrift: 700 .95rem/1.3 var(--sans); }
-dev-figur > svg, dev-figur > img { display: block; width: 100%; height: 100%; }
-.dev { position: relative; z-index: 2; width: clamp(160px, 17vw, 236px); margin-top: 56px; --dev-schatten: drop-shadow(0 24px 24px rgba(5, 18, 14, .35)); }
-.gipfel-name { position: relative; z-index: 2; margin: 16px 0 0; }
-.gipfel-name em { font-size: clamp(1.5rem, 2vw, 1.9rem); line-height: 1; text-shadow: 0 0 14px var(--grund), 0 0 4px var(--grund); }
-.mono { margin: 0; font: 600 .78rem/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--leise); }
-
-/* labels of the peaks a visitor sets (positioned by karte.js) */
-.gipfel-marken { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.gm { position: absolute; display: grid; justify-items: center; gap: 5px; translate: -50% -100%; animation: auftauchen .7s cubic-bezier(.3, 1.5, .5, 1) both; }
-.gm b { font: italic 600 1.25rem/1 var(--serif); white-space: nowrap; text-shadow: 0 0 14px var(--grund), 0 0 4px var(--grund), 0 0 2px var(--grund); }
-.gm small { font: 600 .72rem/1 var(--mono); letter-spacing: .08em; color: var(--leise); text-shadow: 0 0 8px var(--grund), 0 0 2px var(--grund); }
-.gm i { width: 0; border: 6px solid transparent; border-top: 0; border-bottom: 10px solid var(--wange-text); }
+dev-figur > svg { display: block; width: 100%; height: 100%; }
+.dev { position: relative; z-index: 2; width: 100%; --dev-schatten: drop-shadow(0 22px 20px rgb(5 18 14 / .3)); }
+.gipfel-marken, .besucher-marken { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.gm { position: absolute; display: grid; justify-items: center; gap: 4px; translate: -50% -100%; animation: auftauchen .7s cubic-bezier(.16, 1, .3, 1) both; transition: left .6s cubic-bezier(.65, 0, .35, 1), top .6s cubic-bezier(.65, 0, .35, 1); }
+.gm b { font: 700 1.05rem/1.1 var(--sans); white-space: nowrap; color: var(--text); text-shadow: 0 0 3px var(--grund), 0 0 3px var(--grund), 0 0 8px var(--grund); }
+.gm small { font: 600 .8rem/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--leise); text-shadow: 0 0 3px var(--grund), 0 0 6px var(--grund); }
+.gm i { width: 0; border: 6px solid transparent; border-top: 0; border-bottom: 10px solid var(--warm); }
 .gm.weg { animation: verschwinden .6s ease forwards; }
-@keyframes auftauchen { from { opacity: 0; transform: translateY(14px) scale(.8); } }
+@keyframes auftauchen { from { opacity: 0; transform: translateY(12px); } }
 @keyframes verschwinden { to { opacity: 0; transform: translateY(-10px); } }
-
 .hoehenmesser {
-  position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; padding: 7px 11px; border-radius: 999px;
-  background: var(--text); color: var(--grund); font: 600 .75rem/1 var(--mono); white-space: nowrap;
+  position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; padding: 6px 10px; border-radius: 8px;
+  background: var(--text); color: var(--grund); font: 700 .78rem/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap;
   opacity: 0; transition: opacity .2s; will-change: transform;
 }
-.hoehenmesser::before { content: '▲ '; color: var(--wange); }
 .hoehenmesser.an { opacity: 1; }
 
-/* ---------- pages ---------- */
-.abschnitt {
-  width: var(--breite); margin: 0 auto; padding-block: clamp(88px, 11vh, 112px) clamp(64px, 8vh, 88px);
-  display: flex; flex-direction: column; justify-content: safe center; gap: clamp(24px, 4.5vh, 52px);
-}
-.abschnitt-kopf { display: grid; gap: 16px; max-width: 760px; }
-.abschnitt-kopf p:not(.nummer) { margin: 0; max-width: 34em; color: var(--text-2); font-size: 1.15rem; font-weight: 500; line-height: 1.6; }
-h2 { margin: 0; font: 800 clamp(2.5rem, 4.8vw, 4.5rem)/.98 var(--display); letter-spacing: -.03em; text-wrap: balance; }
-.nummer { margin: 0; display: flex; align-items: center; gap: 14px; font: 700 .8rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--blau-text); }
-.nummer::after { content: ''; flex: 0 0 72px; height: 1.5px; background: currentColor; opacity: .5; }
-
-.box {
-  position: relative; isolation: isolate; overflow: hidden; padding: clamp(26px, 3vw, 40px); border-radius: 28px;
-  background: var(--flaeche-fest); border: 1px solid var(--rand); box-shadow: var(--schatten);
-}
-.box::before { /* echo of the map: contour rings in the corner */
-  content: ''; position: absolute; z-index: -1; right: -150px; bottom: -170px; width: 440px; aspect-ratio: 1; border-radius: 50%;
-  background: repeating-radial-gradient(circle, transparent 0 16px, var(--rand) 16px 17.5px);
-  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 70%); mask-image: radial-gradient(circle, #000 20%, transparent 70%);
-  transition: transform 1.4s cubic-bezier(.2, .8, .2, 1);
-}
-.box:hover::before { transform: scale(1.18); }
-.box h3 { margin: 0; font: 800 clamp(1.65rem, 2.4vw, 2.05rem)/1.08 var(--display); letter-spacing: -.02em; }
-.box p { color: var(--text-2); }
-.box .mono { color: var(--blau-text); }
-.mehr { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 2px solid var(--blau-text); color: var(--blau-text); font-weight: 700; text-decoration: none; }
-.mehr:hover { color: var(--text); border-color: var(--text); }
-.mehr span { transition: transform .25s; }
-.mehr:hover span { transform: translateX(4px); }
-
-/* ---------- 01 Peaked ---------- */
-.peaked { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: clamp(24px, 3vw, 40px); }
-.app-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.app-kopf img { width: 56px; height: 56px; border-radius: 15px; box-shadow: 0 10px 24px -10px rgba(5, 18, 14, .5); }
-.chip { margin-left: auto; padding: 8px 12px; border-radius: 999px; border: 1.5px solid currentColor; font: 700 .75rem/1 var(--mono); letter-spacing: .04em; color: var(--wange-text); }
-.peaked h3 { font-size: clamp(2.8rem, 5vw, 4.4rem); line-height: .95; letter-spacing: -.035em; }
-.claim { margin: 6px 0 14px; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.1; }
-.claim em { color: var(--blau-text); }
-.peaked-text > p:not(.claim) { margin: 0; font-size: 1.1rem; font-weight: 500; }
-.fakten { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
-.fakten li { padding: 9px 13px; border-radius: 999px; border: 1px solid var(--rand); font: 600 .78rem/1 var(--mono); }
-.fakten li.stark { background: var(--knopf); border-color: transparent; color: var(--knopf-text); }
-blockquote { margin: 22px 0 18px; padding-left: 18px; border-left: 3px solid var(--wange-text); font: italic 600 clamp(1.3rem, 1.9vw, 1.55rem)/1.28 var(--serif); }
-/* an iPhone: the screenshot is shown whole (height follows the picture), the Dynamic Island sits between time and battery */
+/* ---------- Peaked: the phone on its own summit, the facts written along its contour lines ---------- */
+.peaked { position: relative; grid-template-columns: minmax(0, 1fr); align-items: center; }
+.peaked-text { display: grid; gap: 22px; justify-items: start; }
+.etikett { margin: 0; display: grid; width: min(100%, 26rem); border-top: 1.5px solid var(--text); }
+.etikett div { display: grid; grid-template-columns: 8.5em 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rand); }
+.etikett dt { font-weight: 600; color: var(--leise); }
+.etikett dd { margin: 0; font-weight: 600; color: var(--text); }
+.peaked blockquote { margin: 0; max-width: 24em; font: 600 1.18rem/1.45 var(--sans); color: var(--linie-text); }
+.peaked blockquote::before { content: '„'; }
+.peaked blockquote::after { content: '“'; }
+.peaked-gipfel { justify-self: center; position: relative; z-index: 1; padding-block: 40px 150px; }
+@media (min-width: 900px) { .peaked-gipfel { padding-block: 56px; } }
+/* the phone is a small object with depth: it leans toward the mouse, the phone's tilt sensor or a sideways swipe (karte.js) */
+.handy-buehne { perspective: 1100px; }
 .handy {
-  position: relative; justify-self: center; width: min(232px, 24.5vh, 100%); padding: 8px; border-radius: 40px;
-  background: #08110F; box-shadow: 0 60px 90px -45px rgba(5, 18, 14, .85), inset 0 0 0 1px rgba(255, 255, 255, .12);
-  transform: perspective(1100px) rotateY(var(--ry, -14deg)) rotateX(var(--rx, 6deg)) rotate(1.5deg);
-  transition: transform .6s cubic-bezier(.2, .8, .2, 1);
+  --kx: 0; --ky: 0;
+  position: relative; width: clamp(180px, 46vw, 236px); aspect-ratio: 506 / 1100; border-radius: 2.3rem; padding: 7px; background: #15161F;
+  transform-style: preserve-3d; transform: rotateX(calc(var(--kx) * 1deg)) rotateY(calc(var(--ky) * 1deg));
+  box-shadow: calc(var(--ky) * -1.4px) calc(30px + var(--kx) * 1.2px) 60px -26px rgb(5 18 14 / .55), inset 0 0 0 1.5px rgb(255 255 255 / .1);
+  touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none;
 }
-.handy img { display: block; width: 100%; height: auto; border-radius: 32px; }
-.handy::before { content: ''; position: absolute; z-index: 1; left: 50%; top: calc(8px + 1.1%); width: 28.5%; height: 3.6%; translate: -50% 0; border-radius: 999px; background: #000; }
-.handy::after { content: ''; position: absolute; inset: 8px; border-radius: 32px; pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, .22), transparent 38%); }
+.handy::before { /* the back of the case: shows as the phone's edge when it tilts */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; background: #0A0B10; transform: translateZ(-11px);
+}
+.bildschirm { position: relative; height: 100%; border-radius: 1.85rem; overflow: hidden; transform: translateZ(1px); }
+.handy img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 1.85rem; -webkit-user-drag: none; }
+/* the Dynamic Island between clock and battery, measured on the iPhone screenshot: 28 % wide, 1.2 % from the top */
+.bildschirm::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 1.15%; width: 28.4%; height: 3.85%; translate: -50% 0; border-radius: 999px; background: #050507; }
+.bildschirm::after { /* light that glides over the glass as the phone tilts */
+  content: ""; position: absolute; z-index: 3; inset: -20%; pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .16) 48%, transparent 58%);
+  transform: translateX(calc(var(--ky) * 1.6%)) translateY(calc(var(--kx) * -1%)); opacity: calc(.35 + (var(--ky) * var(--ky) + var(--kx) * var(--kx)) / 300);
+}
+.ringschrift { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+.ringschrift text { font: 650 15px var(--sans); letter-spacing: .1em; fill: var(--linie-text); stroke: var(--grund); stroke-width: 6px; stroke-linejoin: round; paint-order: stroke fill; }
+.ringschrift text.warm { fill: var(--aktion); }
+.nebelgipfel { display: flex; align-items: flex-start; gap: 10px; max-width: 24rem; font-size: .9375rem; color: var(--text-2); }
+.nebelgipfel svg { width: 16px; height: 16px; flex: none; margin-top: 3px; fill: none; stroke: var(--leise); stroke-width: 1.6; stroke-dasharray: 2.2 2; }
+@media (min-width: 900px) {
+  .peaked { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .nebelgipfel { position: absolute; left: 41%; bottom: clamp(28px, 6vh, 64px); max-width: 15rem; }
+}
 
-/* ---------- 02 horizon: the range as a layered relief model (seiten.js draws the layers), the cards are its legend ---------- */
-.horizont {
-  display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-areas: "kopf relief" "ziele relief";
-  align-content: center; column-gap: clamp(24px, 4vw, 64px); row-gap: clamp(20px, 3.6vh, 36px);
+/* ---------- Regeln: a marked trail, red dashes across the contour lines ---------- */
+.regeln { align-content: center; }
+.regeln-kopf { display: grid; gap: 16px; }
+.weg-feld { position: relative; }
+.weg-linie { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.weg-linie path { fill: none; stroke: var(--warm); stroke-width: 3.5; stroke-dasharray: 11 8; stroke-linecap: round; }
+.weg { list-style: none; margin: 0; padding: 0; display: grid; gap: 44px; }
+.weg li { display: grid; gap: 8px; padding-left: 40px; }
+.wegpunkt { position: absolute; left: 0; top: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--grund); border: 4px solid var(--warm); }
+.weg .hoehe { font-weight: 700; font-size: .875rem; color: var(--leise); }
+.weg p { font-size: 1rem; }
+@media (min-width: 900px) {
+  .weg { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; align-items: end; }
+  .weg li { padding-left: 0; padding-top: 44px; margin-bottom: calc(var(--stufe, 0) * 64px); text-align: left; }
+  .weg li:nth-child(1) { --stufe: 0; }
+  .weg li:nth-child(2) { --stufe: 1; }
+  .weg li:nth-child(3) { --stufe: 2; }
+  .weg li:nth-child(4) { --stufe: 3; }
+  .wegpunkt { top: 0; }
 }
-.horizont .abschnitt-kopf { grid-area: kopf; align-self: end; }
-.relief { grid-area: relief; position: relative; align-self: center; width: 100%; aspect-ratio: 5 / 4; max-height: 76svh; perspective: 1700px; pointer-events: none; }
-.relief-kamera { position: absolute; left: 50%; top: 53%; width: min(76%, 70svh); aspect-ratio: 1; translate: -50% -50%; transform-style: preserve-3d; }
-.relief-modell { position: absolute; inset: 0; transform-style: preserve-3d; }
-/* the board the model stands on: a map sheet with a coordinate grid */
-.relief-brett {
-  position: absolute; inset: 0; border-radius: 5%; border: 1px solid var(--rand);
-  background: linear-gradient(var(--rand) 1px, transparent 1px) 0 0 / 12.5% 12.5%, linear-gradient(90deg, var(--rand) 1px, transparent 1px) 0 0 / 12.5% 12.5%, var(--flaeche-fest);
-  box-shadow: 0 50px 80px -40px rgba(5, 18, 14, .5);
-}
-.schicht, .stift, .wolke { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
-.schicht { display: block; }
-/* pins: a pennant on a pole, always facing you */
-.stift { width: 2px; height: 58px; background: var(--text); border-radius: 2px; }
-.stift i {
-  position: absolute; left: 2px; top: 0; padding: 3px 9px 3px 6px; border-radius: 0 3px 3px 0; transform-origin: left center;
-  font: 700 .72rem/1 var(--mono); font-style: normal; letter-spacing: .04em; white-space: nowrap; transition: scale .4s cubic-bezier(.3, 1.6, .5, 1);
-}
-.stift.erreicht i { background: var(--wange-text); color: var(--grund); }
-.stift.nebel i { background: var(--leise); color: var(--grund); }
-.stift.frei i { border: 1.5px dashed var(--wange-text); border-left: 0; color: var(--wange-text); background: var(--flaeche-fest); }
-.stift.an i { scale: 1.35; }
-.stift svg { position: absolute; left: 12px; bottom: 6px; width: 46px; height: 46px; fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; }
-/* fog around Gipfel 02: soft puffs that drift; they part when you point at its card */
-.wolke { width: 34%; aspect-ratio: 1.6; transition: opacity .8s ease; }
-.wolke::before, .wolke::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--nebel), transparent); animation: treiben 9s ease-in-out infinite alternate; }
-.wolke::after { inset: 18% -20% -10% 30%; opacity: .85; animation-duration: 12s; animation-direction: alternate-reverse; }
-.wolke + .wolke::before { animation-duration: 11s; }
-@keyframes treiben { from { translate: -9% 0; } to { translate: 9% 2%; } }
-.relief.lichtet .wolke { opacity: .18; }
 
-.ziele { grid-area: ziele; display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.ziel {
-  display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 14px 18px 15px 14px; border-radius: 18px;
-  background: var(--flaeche-fest); border: 1px solid var(--rand); box-shadow: 0 18px 40px -30px rgba(5, 18, 14, .55);
-  transition: border-color .3s, translate .4s cubic-bezier(.3, 1.4, .5, 1);
+/* ---------- one frame for "Über mich" and the guestbook: a map sheet (Vlad, round 7: unify both, new frame) ----------
+   A solid sheet with soft corners, a hairline edge and the corner marks a printed map has at its four corners. */
+.blatt {
+  --ecke: var(--linie-text);
+  position: relative; background-color: var(--feld); border: 1px solid var(--rand); border-radius: 20px;
+  padding: clamp(22px, 3.4vw, 40px); box-shadow: 0 1px 0 rgb(255 255 255 / .5) inset, 0 28px 60px -34px rgb(5 18 14 / .45);
+  background-image:
+    linear-gradient(var(--ecke), var(--ecke)), linear-gradient(var(--ecke), var(--ecke)),
+    linear-gradient(var(--ecke), var(--ecke)), linear-gradient(var(--ecke), var(--ecke)),
+    linear-gradient(var(--ecke), var(--ecke)), linear-gradient(var(--ecke), var(--ecke)),
+    linear-gradient(var(--ecke), var(--ecke)), linear-gradient(var(--ecke), var(--ecke));
+  background-size: 18px 2px, 2px 18px, 18px 2px, 2px 18px, 18px 2px, 2px 18px, 18px 2px, 2px 18px;
+  background-position: 12px 12px, 12px 12px, calc(100% - 12px) 12px, calc(100% - 12px) 12px,
+    12px calc(100% - 12px), 12px calc(100% - 12px), calc(100% - 12px) calc(100% - 12px), calc(100% - 12px) calc(100% - 12px);
+  background-repeat: no-repeat;
 }
-.ziel.an { border-color: var(--blau-text); translate: 6px 0; }
-.ziel .mono { color: var(--blau-text); font-size: .72rem; }
-.ziel h3 { margin: 3px 0 4px; font: 800 1.3rem/1.1 var(--display); letter-spacing: -.01em; }
-.ziel p:not(.mono) { margin: 0; color: var(--text-2); font-size: 1rem; font-weight: 500; line-height: 1.5; }
-.ziel .mehr { padding: 0; margin-left: 2px; border-bottom-width: 1.5px; white-space: nowrap; }
-/* the legend symbol: the same pennant as on the model */
-.ziel-fahne { position: relative; height: 40px; margin-top: 2px; }
-.ziel-fahne::before { content: ''; position: absolute; left: 6px; top: 2px; bottom: 0; width: 2px; border-radius: 2px; background: var(--text); }
-.ziel-fahne::after { content: ''; position: absolute; left: 8px; top: 2px; width: 20px; height: 13px; border-radius: 0 2px 2px 0; background: var(--wange-text); }
-.ziel-fahne.nebel::after { background: var(--leise); box-shadow: 0 0 0 5px color-mix(in srgb, var(--leise) 18%, transparent); }
-.ziel-fahne.frei::after { background: transparent; border: 1.5px dashed var(--wange-text); border-left: 0; }
+.blatt-fuss { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; padding-top: 16px; border-top: 1px solid var(--rand); font-size: .875rem; font-weight: 600; color: var(--leise); }
 
-/* ---------- 03 trail rules: the trail climbs from station to station (index idea from Aura's "Atlas Brut") ---------- */
-.weg-rahmen { --stufe: clamp(28px, 5vh, 50px); position: relative; }
-.weg-linie { position: absolute; left: 0; top: 12px; width: 100%; height: calc(3 * var(--stufe)); overflow: visible; }
-.weg-linie path { fill: none; stroke: var(--blau-text); stroke-width: 2.5; stroke-dasharray: 2 8; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.weg { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; counter-reset: regel; }
-.weg li { position: relative; counter-increment: regel; display: grid; align-content: start; justify-items: center; gap: 10px; padding: calc(3 * var(--stufe) + 46px) clamp(10px, 1.5vw, 24px) 0; text-align: center; }
-.weg li::before { /* waypoint on the trail */
-  content: ''; position: absolute; left: 50%; translate: -50% 0; top: calc((3 - var(--n)) * var(--stufe)); width: 24px; height: 24px; border-radius: 50%;
-  background: var(--grund); border: 3px solid var(--blau-text); transition: background .3s, border-color .3s, transform .4s cubic-bezier(.3, 1.6, .5, 1);
-}
-.weg li::after { /* from the waypoint down to its text */
-  content: ''; position: absolute; left: calc(50% - 1px); top: calc((3 - var(--n)) * var(--stufe) + 28px); height: calc(var(--n) * var(--stufe) + 8px); border-left: 2px dotted var(--blau-text); opacity: .6;
-}
-.weg li:hover::before { background: var(--wange); border-color: var(--wange-text); transform: scale(1.2); }
-.hoehe { display: flex; align-items: baseline; justify-content: center; gap: 12px; font: 700 .8rem/1 var(--mono); letter-spacing: .08em; color: var(--blau-text); }
-.hoehe::before { content: counter(regel, decimal-leading-zero); font: 800 clamp(2.2rem, 3.4vw, 3rem)/.85 var(--display); letter-spacing: -.04em; color: var(--text); }
-.weg h3 { margin: 0; font: 800 clamp(1.3rem, 1.9vw, 1.75rem)/1.08 var(--display); letter-spacing: -.02em; text-wrap: balance; transition: color .3s; }
-.weg li:hover h3 { color: var(--blau-text); }
-.weg p { margin: 0; color: var(--text-2); font-size: 1.0625rem; font-weight: 500; line-height: 1.6; }
-
-/* ---------- 04 about me ---------- */
-.ueber { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); align-items: center; gap: clamp(32px, 6vw, 88px); }
-.ueber .abschnitt-kopf p:not(.nummer) { color: var(--text); }
-.foto { justify-self: center; display: grid; justify-items: center; margin: 0; rotate: 2.5deg; transition: rotate .5s cubic-bezier(.3, 1.4, .5, 1); }
-.foto:hover { rotate: 0deg; }
-.foto-rahmen { /* a print with a white border, like a photo pinned to the hut wall */
-  position: relative; width: min(320px, 72vw, 44vh); aspect-ratio: 1; border: 14px solid var(--papier); border-bottom-width: 64px; border-radius: 6px;
-  background: repeating-radial-gradient(circle at 50% 110%, transparent 0 14px, var(--rand) 14px 15.5px), var(--grund-2);
-  box-shadow: var(--schatten), 0 0 0 1px var(--rand);
-}
+/* ---------- Über mich ---------- */
+.ueber { align-content: center; }
+.kartusche { width: min(100%, 58rem); justify-self: center; display: grid; gap: 24px; }
+.kartusche-innen { display: grid; gap: clamp(18px, 3vw, 36px); }
+@media (min-width: 760px) { .kartusche-innen { grid-template-columns: 7.5rem minmax(0, 1fr); align-items: start; } }
+.kartusche-text { display: grid; gap: 14px; }
+.foto { margin: 0; width: 7.5rem; }
+@media (max-width: 759px) { .foto { width: 5.5rem; } }
+.foto-rahmen { position: relative; aspect-ratio: 1; border-radius: 50%; border: 1.5px solid var(--rand); background: var(--grund); overflow: hidden; }
 .foto-rahmen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.foto-platzhalter { position: absolute; inset: 22%; width: 56%; height: 56%; fill: none; stroke: var(--blau-text); stroke-width: 5; stroke-linecap: round; }
-.foto figcaption { position: relative; display: grid; justify-items: center; gap: 4px; margin-top: -56px; height: 56px; align-content: center; color: var(--tinte); }
-.foto figcaption em { font-size: 1.6rem; line-height: 1; }
-.foto figcaption .mono { color: var(--tinte-leise); font-size: .72rem; }
+.foto-platzhalter { position: absolute; inset: 18%; fill: none; stroke: var(--rand); stroke-width: 3; }
+.massstab { display: inline-flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+.massstab svg { width: 96px; height: 12px; fill: var(--text); stroke: var(--text); stroke-width: 1.2; }
 
-/* ---------- 05 guestbook: an open book (idea from Meng To's "Book Serif Index" on Aura) ---------- */
-.kontakt { flex-direction: row; align-items: center; gap: clamp(28px, 4vw, 64px); }
-.buch-kopf { flex: 0 0 min(340px, 30%); display: grid; justify-items: start; gap: 16px; }
-.buch-kopf > p:not(.nummer) { margin: 0; color: var(--text-2); font-size: 1.1rem; font-weight: 500; line-height: 1.6; }
-.dev-jubel { width: clamp(84px, 8vw, 112px); margin: 0 0 -6px; --dev-schatten: drop-shadow(0 16px 18px rgba(5, 18, 14, .35)); }
-.post { display: grid; justify-items: start; gap: 12px; margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rand); }
-.post p { margin: 0; color: var(--text-2); font-size: 1rem; font-weight: 500; }
-.buch {
-  position: relative; isolation: isolate; flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  filter: drop-shadow(0 40px 50px rgba(5, 18, 14, .28));
-}
-.buch::before { /* the cover peeking out behind the pages */
-  content: ''; position: absolute; z-index: -1; inset: -12px -14px -16px; border-radius: 22px; background: var(--einband);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .08);
-}
-.seite {
-  position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0;
-  padding: clamp(22px, 2.8vw, 40px); color: var(--tinte); background: var(--papier);
-  box-shadow: 0 1px 0 var(--papier-2), 0 3px 0 var(--papier-2), 0 5px 0 #d9cfb6; /* the stack of pages */
-}
-.seite.links { border-radius: 16px 4px 4px 16px; background: linear-gradient(to left, rgba(60, 45, 20, .16), transparent 10%), var(--papier); }
-.seite.rechts { border-radius: 4px 16px 16px 4px; background: linear-gradient(to right, rgba(60, 45, 20, .2), transparent 10%), var(--papier); }
-.kopfzeile { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--papier-linie); font: 600 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--tinte-leise); }
-.buch-titel { margin: 4px 0 0; font: italic 600 clamp(1.7rem, 2.6vw, 2.2rem)/1 var(--serif); }
-.folio { margin: auto 0 0; padding-top: 8px; text-align: center; font: 500 .8rem/1 var(--serif); color: var(--tinte-leise); }
-
-.eintraege { display: grid; align-content: start; gap: 0; max-height: clamp(220px, 36vh, 360px); margin: 0; padding: 0 6px 0 0; overflow: auto; list-style: none; border-radius: 6px; scrollbar-color: var(--papier-linie) transparent; }
-.eintraege li { display: grid; gap: 6px; padding: 16px 0; border-bottom: 1px dashed var(--papier-linie); }
-.eintraege .was { margin: 0; font: italic 600 1.35rem/1.35 var(--serif); }
-.eintraege li:first-child .was::first-letter { float: left; margin: 4px 8px 0 0; font: 800 3.1rem/.8 var(--display); font-style: normal; color: var(--einband); }
-.eintraege .wer { margin: 0; font: 600 .75rem/1.4 var(--mono); letter-spacing: .06em; color: var(--tinte-leise); }
-.eintraege .leer { color: var(--tinte-leise); font-style: italic; }
-.buch-stempel { align-self: flex-end; width: 104px; margin: auto 8px -8px 0; rotate: -14deg; opacity: .7; fill: none; stroke: var(--tinte-akzent); stroke-width: 2; }
-.buch-stempel text { fill: var(--tinte-akzent); stroke: none; font: 700 10.5px/1 var(--mono); letter-spacing: .12em; }
-.buch-stempel + .folio { margin-top: 0; }
-.marke-idee { justify-self: start; padding: 5px 9px; border: 1.5px solid var(--tinte-akzent); border-radius: 4px; rotate: -2deg; font: 700 .7rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--tinte-akzent); }
-
-.eintragen .art { display: flex; flex-wrap: wrap; gap: 10px; margin: 2px 0 4px; padding: 0; border: 0; }
-.eintragen .art legend { width: 100%; margin-bottom: 8px; padding: 0; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
-.art label { position: relative; cursor: pointer; }
-.art input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.art span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--papier-linie); font-weight: 600; transition: background .2s, color .2s, border-color .2s; }
-.art input:checked + span { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
-.art input:focus-visible + span { outline: 3px solid var(--tinte-akzent); outline-offset: 2px; }
-.feld { display: flex; justify-content: space-between; gap: 12px; margin-top: 4px; font: 600 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise); }
-.zaehler { letter-spacing: 0; }
+/* ---------- Gipfelbuch: the form is a legend box, the entries are summits ---------- */
+.buch { position: relative; grid-template-columns: minmax(0, 1fr); align-items: start; padding-bottom: 220px; } /* phones: open map below the form for the visitors' summits */
+.buch-text { display: grid; gap: 18px; align-content: start; }
+.privat { font-size: 1rem; }
+.eintraege-titel { margin-top: 10px; }
+.eintraege { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; max-width: 30rem; }
+.eintraege li { display: grid; grid-template-columns: 16px 1fr; gap: 4px 10px; align-items: baseline; }
+.eintraege li svg { width: 14px; height: 14px; fill: var(--warm); translate: 0 1px; }
+.eintraege .wer { font-weight: 700; color: var(--text); }
+.eintraege .wer .hoehe { font-weight: 600; color: var(--leise); }
+.eintraege .was { grid-column: 2; color: var(--text-2); }
+.eintraege .marke-idee { font-size: .8rem; font-weight: 700; color: var(--aktion); margin-left: 6px; }
+.eintragen { display: grid; gap: 10px; width: min(100%, 30rem); justify-self: center; }
+.falle { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; } /* a field only bots fill in */
+.eintragen .knopf[disabled] { opacity: .6; cursor: progress; }
+.art { border: 0; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.art legend { font-weight: 700; margin-bottom: 10px; }
+.art label { position: relative; }
+.art input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.art span { display: inline-block; padding: 9px 15px; border-radius: 999px; border: 1.5px solid var(--rand); font-weight: 600; }
+.art input:checked + span { background: var(--text); color: var(--grund); border-color: var(--text); }
+.art input:focus-visible + span { outline: 3px solid var(--warm); outline-offset: 3px; }
+.feld { display: flex; justify-content: space-between; font-weight: 700; margin-top: 6px; }
+.zaehler { font-weight: 500; color: var(--leise); font-variant-numeric: tabular-nums; }
 .eintragen input[type=text], .eintragen textarea {
-  width: 100%; padding: 8px 2px; border: 0; border-bottom: 2px solid var(--tinte-leise); border-radius: 0; background: transparent;
-  color: var(--tinte); font: 500 1.0625rem/1.5 var(--sans);
+  width: 100%; font: 500 1rem/1.45 var(--sans); color: var(--text); background: var(--feld);
+  border: 1.5px solid var(--rand); border-radius: 8px; padding: 11px 13px; resize: vertical;
 }
-.eintragen textarea { resize: vertical; min-height: 128px; line-height: 32px; padding-top: 0; border: 0;
-  background: repeating-linear-gradient(transparent 0 31px, var(--papier-linie) 31px 32px); } /* lined paper */
-.eintragen input::placeholder { color: var(--tinte-leise); opacity: .8; }
-.eintragen input[type=text]:focus-visible, .eintragen textarea:focus-visible { outline: 3px solid var(--tinte-akzent); outline-offset: 4px; }
-.haken { display: flex; align-items: flex-start; gap: 10px; font-size: .95rem; line-height: 1.45; cursor: pointer; }
-.haken input { flex: none; width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--einband); }
-.honig { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.absenden { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 4px; }
-.stempel { /* a rubber summit stamp */
-  min-height: 52px; padding: 0 26px; border: 3px double var(--tinte-akzent); border-radius: 10px; background: transparent; color: var(--tinte-akzent);
-  font: 800 1.05rem/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; rotate: -3deg;
-  transition: rotate .3s cubic-bezier(.3, 1.6, .5, 1), background .2s, color .2s;
+.eintragen input[type=text]:focus, .eintragen textarea:focus { outline: none; border-color: var(--linie-text); box-shadow: 0 0 0 3px rgb(22 131 108 / .2); }
+.eintragen [aria-invalid="true"] { border-color: var(--aktion); }
+.eintragen ::placeholder { color: var(--leise); opacity: .8; }
+.haken { display: flex; gap: 10px; align-items: flex-start; font-size: .9375rem; margin-top: 6px; color: var(--text-2); }
+.haken input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--linie-text); flex: none; }
+.absenden { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 8px; }
+.status { font-weight: 600; color: var(--linie-text); }
+.status.fehler { color: var(--aktion); }
+.vorschau-hinweis { font-size: .8125rem; color: var(--leise); }
+@media (min-width: 900px) {
+  .buch { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); gap: clamp(32px, 6vw, 96px); align-items: center; padding-bottom: clamp(56px, 9vh, 104px); }
 }
-.stempel:hover { rotate: 0deg; background: var(--tinte-akzent); color: var(--papier); }
-.stempel:disabled { opacity: .5; cursor: wait; }
-.status { flex: 1 1 200px; margin: 0; font-size: .95rem; line-height: 1.4; }
-.status.fehler { color: var(--tinte-akzent); font-weight: 600; }
 
-/* footer: the last stop when you scroll all the way down */
-.fuss {
-  width: var(--breite); margin: 0 auto; padding: 28px 0 44px; border-top: 1px solid var(--rand); scroll-snap-align: end;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 36px; font: 500 .85rem/1.5 var(--mono); color: var(--leise);
-}
-.fuss img { display: block; height: 30px; width: auto; }
-.fuss nav { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-right: auto; }
-.fuss a { padding: 8px 0; text-decoration: underline; text-decoration-color: var(--rand); text-underline-offset: 4px; }
-.fuss a:hover { color: var(--text); }
-.fuss p { margin: 0; }
+/* ---------- footer ---------- */
+.fuss { max-width: 1240px; margin: 0 auto; padding: 32px 0 calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: .875rem; color: var(--leise); border-top: 1px solid var(--rand); }
+.fuss nav { display: flex; gap: 20px; }
+.fuss a { color: var(--text-2); }
 
-/* ---------- page titles: each word rises out of a mask, every time you arrive (technique from Aura's "Nexus Render Kinetic Hero") ---------- */
-.wm { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .06em .1em .16em; margin: 0 -.1em -.16em; }
-.wm > span { display: inline-block; transition: transform 1.1s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 60ms + .15s); }
-.wartet .wm > span { transform: translateY(115%); transition-duration: 0s; transition-delay: 0s; }
-
-/* ---------- opening (seiten.js): a drone flight down through the clouds onto Dev's summit ----------
-   html.auftakt-laeuft while it plays, html.auftakt-an delays the hero's entrance. The name hangs in the fog,
-   the camera dives through it, three cloud sheets rush past (the front one fastest) and open over Dev's summit. */
+/* ---------- opening: a drone flight down through the clouds onto Dev's summit ---------- */
 .auftakt { display: none; }
 .auftakt-laeuft .auftakt { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; overflow: hidden; }
 .auftakt > * { grid-area: 1 / 1; }
 .auftakt-wolke, .auftakt-nebel { align-self: stretch; justify-self: stretch; width: 100%; height: 100%; }
 .auftakt-nebel { background: var(--wolke-grund); }
 .auftakt-marke { margin: 0; font: 800 clamp(2.6rem, 6.4vw, 4.6rem)/1 var(--display); letter-spacing: -.035em; color: var(--text); opacity: 0; }
-.auftakt-marke em { color: var(--blau-text); }
-/* the hero arrives as the curtain lifts */
-.auftakt-an h1 .zeile > span { animation-delay: 1.5s; }
-.auftakt-an h1 .zeile + .zeile > span { animation-delay: 1.62s; }
-.auftakt-an .held-text > :not(h1), .auftakt-an .gipfel-name, .auftakt-an .gebirge { animation: rein 1s cubic-bezier(.2, .8, .2, 1) 1.7s both; }
-.auftakt-an .kopf { animation: von-oben .9s cubic-bezier(.2, .8, .2, 1) 1.6s both; }
-.auftakt-an .etappen, .auftakt-an .weiter { animation: blende .7s ease 2s both; }
+.auftakt-marke b { color: var(--linie-text); }
+.auftakt-an .start-text, .auftakt-an .gipfelzeichen, .auftakt-an .gebirge { animation: rein 1s cubic-bezier(.16, 1, .3, 1) 1.6s both; }
+.auftakt-an .kopf { animation: von-oben .9s cubic-bezier(.16, 1, .3, 1) 1.6s both; }
 @keyframes rein { from { opacity: 0; transform: translateY(18px); } }
 @keyframes von-oben { from { transform: translateY(-170%); } }
-@keyframes blende { from { opacity: 0; } }
 
-/* ---------- wide screens: room for the stages on the right ---------- */
-@media (min-width: 1101px) { :root { --breite: min(1220px, calc(100% - 150px)); } }
-@media (max-width: 1100px) { .etappen { display: none; } }
+/* ---------- pages besides the start: Peaked, help, privacy, imprint, 404 ---------- */
+.unterseite .ort { min-height: auto; padding-block: clamp(110px, 16vh, 150px) clamp(40px, 7vh, 72px); }
+.unterseite .ort.erste { min-height: 100svh; }
+.unterseite h1 { font-size: clamp(2.6rem, 6vw, 4.8rem); }
+.abschnitt-kopf { display: grid; gap: 14px; }
+.zitat { margin: 0; max-width: 28em; font: 600 1.25rem/1.45 var(--sans); color: var(--linie-text); }
+.zitat::before { content: "„"; }
+.zitat::after { content: "“"; }
 
-/* ---------- low windows (laptops): everything a bit tighter so each page still fits ---------- */
-@media (min-width: 881px) and (max-height: 820px) {
-  h2 { font-size: clamp(2.2rem, 4vw, 3.5rem); }
-  .abschnitt-kopf { gap: 10px; }
-  .abschnitt-kopf p:not(.nummer) { font-size: 1.05rem; }
-  .peaked blockquote { display: none; }
-  .peaked h3 { font-size: clamp(2.4rem, 4vw, 3.4rem); }
-  .weg-rahmen { --stufe: 26px; }
-  .eintraege { max-height: 230px; }
-  .eintragen textarea { min-height: 0; height: 96px; }
-  .kopfzeile, .folio { display: none; }
-  .eintragen .art legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .weg li { padding-top: calc(3 * var(--stufe) + 36px); gap: 8px; }
-  .weg p { font-size: 1rem; line-height: 1.55; }
-  .seite { gap: 8px; }
-  .buch-stempel { display: none; }
-  .ziel { padding-block: 11px 12px; }
-  .horizont .abschnitt-kopf p:not(.nummer) { display: none; } /* the cards say it anyway */
-  .ziel p:not(.mono) { font-size: .95rem; line-height: 1.45; }
-  .ziele { gap: 10px; }
-}
+/* reading pages: one calm column on the map */
+.text-seite { max-width: 46rem; margin: 0 auto; padding-block: clamp(110px, 16vh, 150px) 72px; display: grid; gap: 18px; }
+.text-seite h1 { font: 800 clamp(2.2rem, 5vw, 3.4rem)/1.02 var(--display); letter-spacing: -.02em; }
+.text-seite h2 { font: 800 clamp(1.35rem, 2.6vw, 1.7rem)/1.15 var(--display); letter-spacing: -.01em; margin-top: 18px; }
+.text-seite p, .text-seite li { color: var(--text-2); max-width: 40em; }
+.text-seite ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.stand { font-size: .9375rem; font-weight: 600; color: var(--leise); }
+.platzhalter { background: color-mix(in srgb, #F2B705 26%, transparent); border-radius: 4px; padding: 0 .25em; font-weight: 600; color: var(--text); }
+.hinweis { border: 1px solid color-mix(in srgb, var(--warm) 45%, transparent); padding: 12px 16px; background: color-mix(in srgb, var(--warm) 8%, var(--feld)); border-radius: 12px; color: var(--text); }
+.hinweis p { color: var(--text); }
 
-/* ---------- small screens ---------- */
-@media (max-width: 880px) {
-  .held { grid-template-columns: minmax(0, 1fr); padding: 112px 0 92px; gap: 0; }
-  .weiter.unterwegs { opacity: 0; visibility: hidden; } /* phones: only a hint on the first page, later it would cover text */
-  .gipfel { min-height: 0; padding: 56px 0 12px; }
-  .gebirge { font-size: clamp(2.4rem, 12vw, 4.2rem); letter-spacing: .32em; text-indent: .32em; }
-  .peaked, .ueber { grid-template-columns: minmax(0, 1fr); }
-  .handy { width: min(250px, 80%); margin-top: 8px; }
-  /* horizon: model on top, legend below */
-  .horizont { grid-template-columns: minmax(0, 1fr); grid-template-areas: "kopf" "relief" "ziele"; row-gap: 14px; }
-  .relief { aspect-ratio: 1.15; max-height: none; }
-  .relief-kamera { width: 74%; }
-  /* trail rules: one station below the other, the trail runs down the left */
-  .weg-linie { display: none; }
-  .weg { grid-template-columns: minmax(0, 1fr); }
-  .weg::before { content: ''; position: absolute; left: 11px; top: 30px; bottom: 30px; border-left: 2px dashed var(--blau-text); opacity: .55; }
-  .weg li { padding: 22px 0 22px 52px; justify-items: start; text-align: left; }
-  .weg li::before { top: 26px; left: 0; translate: none; }
-  .hoehe { justify-content: flex-start; }
-  .weg li::after { display: none; }
-  .kontakt { flex-direction: column; align-items: stretch; }
-  .buch-kopf { flex: none; }
-  .buch { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .buch::before { inset: -10px; }
-  .seite.links, .seite.rechts { border-radius: 14px; background: var(--papier); }
-  .eintraege { max-height: 380px; }
+/* Peaked page: the screens of the app, side by side like a row of summits */
+.screens { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 3vw, 36px); align-items: start; }
+.screens li { display: grid; gap: 14px; justify-items: center; text-align: center; }
+.screens .handy { width: min(100%, 210px); border-radius: 1.9rem; padding: 6px; }
+.screens .bildschirm, .screens .handy img { border-radius: 1.5rem; }
+.screens h3 { font: 800 1.2rem/1.1 var(--display); }
+.screens p { font-size: .9375rem; color: var(--text-2); max-width: 17em; }
+@media (max-width: 899px) {
+  .screens { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: min(64vw, 230px); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); scrollbar-width: none; }
+  .screens::-webkit-scrollbar { display: none; }
+  .screens li { scroll-snap-align: center; }
 }
-/* phones: a round button; the menu unfolds from it like contour rings spreading out, the pages drop in one after another */
-@media (max-width: 760px) {
-  .schlitten { display: none; }
-  .menue-knopf {
-    display: block; position: relative; width: 44px; height: 44px; padding: 0; border: 1px solid var(--rand); border-radius: 50%;
-    background: transparent; color: var(--text); cursor: pointer; transition: background .3s, color .3s;
-  }
-  .menue-knopf i { position: absolute; left: 13px; right: 13px; top: calc(50% - 1px); height: 2px; border-radius: 2px; background: currentColor; transition: translate .3s, rotate .45s cubic-bezier(.3, 1.5, .5, 1); }
-  .menue-knopf i:first-child { translate: 0 -4px; }
-  .menue-knopf i:last-child { translate: 0 4px; }
-  .offen .menue-knopf { background: var(--text); color: var(--grund); }
-  .offen .menue-knopf i { translate: 0 0; rotate: 45deg; }
-  .offen .menue-knopf i:last-child { rotate: -45deg; }
-  .menue {
-    --mitte: calc(100% - 30px) -38px; /* the button's center, above the panel */
-    position: absolute; top: calc(100% + 8px); left: 0; right: 0; flex-direction: column; gap: 2px; padding: 10px;
-    border: 1px solid var(--rand); border-radius: 28px; box-shadow: 0 24px 50px -24px rgba(26, 26, 46, .5);
-    background: repeating-radial-gradient(circle at var(--mitte), transparent 0 31px, var(--rand) 31px 32px) var(--flaeche-fest);
-    clip-path: circle(0 at var(--mitte)); visibility: hidden;
-    transition: clip-path .45s cubic-bezier(.65, 0, .35, 1), visibility 0s .45s;
-  }
-  .offen .menue { clip-path: circle(140% at var(--mitte)); visibility: visible; transition: clip-path .7s cubic-bezier(.65, 0, .25, 1), visibility 0s; }
-  .menue a {
-    display: flex; align-items: baseline; gap: 16px; padding: 16px 18px; border-radius: 18px; font-size: 1.3rem;
-    opacity: 0; translate: 0 -12px; transition: opacity .2s, translate .2s, background .2s, color .2s;
-  }
-  .offen .menue a { opacity: 1; translate: 0 0; transition: opacity .35s, translate .55s cubic-bezier(.3, 1.5, .5, 1), background .2s, color .2s; transition-delay: calc(.12s + var(--i, 0) * 55ms); }
-  .menue small { display: inline; font: 700 .75rem/1 var(--mono); letter-spacing: .12em; color: var(--blau-text); }
-  .menue a[aria-current] { background: var(--knopf); }
-  .menue a[aria-current] small { color: inherit; }
-}
-@media (max-width: 520px) {
-  h1 { font-size: clamp(3.2rem, 16vw, 4.6rem); }
-  .post .knopf { white-space: normal; text-align: center; }
-}
+.merkmale { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 26px 40px; }
+.merkmale li { display: grid; grid-template-columns: 22px 1fr; gap: 6px 12px; align-items: baseline; }
+.merkmale svg { width: 16px; height: 16px; fill: var(--warm); translate: 0 2px; }
+.merkmale h3 { font-size: 1.0625rem; }
+.merkmale p { grid-column: 2; font-size: 1rem; color: var(--text-2); }
 
-/* ---------- more contrast when the system asks for it ---------- */
-@media (prefers-contrast: more) {
-  :root { --rand: rgba(26, 26, 46, .55); --leise: var(--text); --text-2: var(--text); --papier-linie: rgba(26, 26, 46, .6); }
-  .lichtung::before { opacity: 1; }
-  .gebirge { opacity: .4; }
-}
+/* help: questions that open like a map's fold */
+.fragen { display: grid; gap: 10px; }
+.fragen details { border: 1px solid var(--rand); border-radius: 14px; background: var(--feld); }
+.fragen summary { cursor: pointer; list-style: none; padding: 16px 18px; font-weight: 700; display: flex; justify-content: space-between; gap: 16px; align-items: center; border-radius: 14px; }
+.fragen summary::-webkit-details-marker { display: none; }
+.fragen summary::after { content: ""; width: 10px; height: 10px; flex: none; border: solid var(--linie-text); border-width: 0 2px 2px 0; rotate: 45deg; translate: 0 -3px; transition: rotate .2s cubic-bezier(.23, 1, .32, 1); }
+.fragen details[open] summary::after { rotate: 225deg; translate: 0 3px; }
+.fragen details > div { padding: 0 18px 16px; display: grid; gap: 10px; }
 
-/* ---------- calm mode: pages still snap, but nothing flies ---------- */
+/* 404: lost on the map */
+.verirrt .gipfelzeichen .hoehe { color: var(--aktion); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  [data-tiefe] { transform: none !important; opacity: 1 !important; }
-  .wartet .wm > span { transform: none; }
+  .gm, .gm.weg, .knopf, .schlitten { animation: none; transition: none; }
+  .handy { transform: none; }
 }

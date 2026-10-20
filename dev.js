@@ -3,7 +3,7 @@
 // Use:     <script src="dev.js" defer></script>
 //          <dev-figur></dev-figur>                 size it with CSS (width; it stays square)
 // Attributes:
-//   gruss="…"   first sentence when Dev comes into view (default: by time of day / returning visitor)
+//   gruss="…"   first sentence when Dev comes into view (default: by time of day)
 //   stumm       no greeting
 //   jubelt      jumps for joy the first time he comes into view
 //   begleiter   small companion at the bottom right; peeks out while no other Dev is in view
@@ -21,10 +21,9 @@ const NACHT = '#1A1A2E', BLAU = '#22A68A', SCHATTEN = '#16836C', WANGE = '#FF8FB
 const SAETZE = ['Ich bin ein Berg. Ein kleiner.', 'Mein Hut heißt Kalpak. Tipp mal drauf!', 'Ich pass auf, dass Apps Freude machen.', 'Deine Daten? Bleiben bei dir.'];
 const HOEHEN = { weg: '115%', spitze: '70%', lugt: '34%', da: '4%' }; // companion: how far he is tucked below the screen edge
 
-let besuche = 1;
-try { besuche = +(localStorage.getItem('dev-besuche') || 0) + 1; localStorage.setItem('dev-besuche', besuche); } catch {}
+// no visit counter any more: the site promises to store nothing in the visitor's browser (no consent banner needed)
 const stunde = new Date().getHours();
-const GRUSS = stunde < 5 || stunde >= 22 ? 'Noch wach? Ich auch.' : besuche > 1 ? 'Da bist du ja wieder!'
+const GRUSS = stunde < 5 || stunde >= 22 ? 'Noch wach? Ich auch.'
   : stunde < 11 ? 'Guten Morgen! Ich bin Dev.' : stunde < 17 ? 'Hallo! Ich bin Dev.' : 'Guten Abend! Ich bin Dev.';
 
 /* ---------- the drawing (same geometry as the logo, viewBox 100 × 100) ---------- */
