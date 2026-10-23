@@ -108,11 +108,31 @@
   <div class="peaked-gipfel handy-buehne">
     <div class="handy">
       <div class="bildschirm">
-        <picture>
+        <picture class="screen an" data-screen="logbuch">
           <source srcset="assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)">
-          <img src="assets/peaked-logbuch.jpg" alt="Peaked: das Logbuch mit dem Watzmann als letzter Tour" width="506" height="1100" loading="lazy" draggable="false">
+          <img src="assets/peaked-logbuch.jpg" alt="Peaked im Logbuch: das Gottesacker-Plateau als neuestes Plakat" width="600" height="1339" loading="lazy" draggable="false">
+        </picture>
+        <picture class="screen" data-screen="wand" aria-hidden="true">
+          <source srcset="assets/peaked-wand-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="assets/peaked-wand.jpg" alt="Peaked: alle Plakate der Saison an der Wand, vom Nebelhorn bis zum Säntis" width="600" height="1339" loading="lazy" draggable="false">
+        </picture>
+        <picture class="screen" data-screen="ziele" aria-hidden="true">
+          <source srcset="assets/peaked-ziele-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="assets/peaked-ziele.jpg" alt="Peaked bei den Zielen: die Serles als Gipfel der Woche und das Saisonziel als Fahrschein" width="600" height="1339" loading="lazy" draggable="false">
         </picture>
       </div>
+    </div>
+    <!-- floats below the phone: which screen of the app, and the app by day or by night (karte.js) -->
+    <div class="handy-steuer" hidden>
+      <div class="screen-wahl" role="group" aria-label="Bildschirm der App">
+        <span class="wahl-schlitten" aria-hidden="true"></span>
+        <button type="button" data-screen="logbuch" aria-pressed="true">Plakat</button>
+        <button type="button" data-screen="wand" aria-pressed="false">Wand</button>
+        <button type="button" data-screen="ziele" aria-pressed="false">Ziele</button>
+      </div>
+      <button class="modus-knopf" type="button" aria-pressed="false" aria-label="App bei Nacht zeigen" title="Tag oder Nacht" data-dev-sagt="Peaked kann auch Nacht.">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><g class="sonne"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g><path class="mond" d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z"/></svg>
+      </button>
     </div>
   </div>
   <svg class="ringschrift" aria-hidden="true"></svg>

@@ -240,8 +240,13 @@ void main() {
 }`;
 
 const canvas = $('.karte'), hm = $('.hoehenmesser'), hmWert = $('.hm-wert');
-const handy = $('.handy'), peaked = $('.peaked'), ringe = $('.ringschrift'), nebelgipfel = $('.nebelgipfel');
+const handy = $('.handy'), peaked = $('.peaked'), ringe = $('.ringschrift'), nebelgipfel = $('.nebelgipfel'), handySteuer = $('.handy-steuer');
 const buchTitel = $('#buch-titel');
+// the phone and the buttons floating below it stand on one summit: its middle, height, top and bottom
+function buehne() {
+  const p = handy.getBoundingClientRect(), unten = handySteuer?.offsetHeight ? handySteuer.getBoundingClientRect().bottom : p.bottom;
+  return [p.left + p.width / 2, (p.top + unten) / 2, unten - p.top, p.top, unten];
+}
 if (canvas) starteKarte();
 
 function starteKarte() {
@@ -302,7 +307,7 @@ function starteKarte() {
     S.mitteX = canvas.clientWidth / 2; S.mitteY = canvas.clientHeight / 2;
 
     if (dev) { const d = dev.getBoundingClientRect(); S.dev = [d.left + d.width / 2, d.top + d.height * .62, d.width * .95]; }
-    if (handy) { const p = handy.getBoundingClientRect(); S.peaked = [p.left + p.width / 2, p.top + p.height / 2, p.height * (innerWidth < 900 ? 1 : .8), 1.15]; } // phones: a wider summit, so its rings close around the phone
+    if (handy) { const [x, y, h] = buehne(); S.peaked = [x, y, h * (innerWidth < 900 ? 1 : .8), 1.15]; } // phones: a wider summit, so its rings close around the phone
     if (buchTitel) { const b = buchTitel.getBoundingClientRect(); S.buch = [b.left + b.width * .45, b.top + b.height / 2, Math.min(300, innerWidth * .34), .95]; }
 
     // small summits: grow in, sink out
@@ -382,7 +387,7 @@ function nachZeichnen() {
   }
   if (ringe && bild % 2 === 0) ringschrift();
 }
-const textBloecke = $$('.ruhe, .kopf, .knopf, dev-figur, .gipfelzeichen, .nebelgipfel, .eintragen, .handy, .fuss');
+const textBloecke = $$('.ruhe, .kopf, .knopf, dev-figur, .gipfelzeichen, .nebelgipfel, .eintragen, .handy, .handy-steuer, .fuss');
 const imText = (x, y) => textBloecke.some(el => { const b = el.getBoundingClientRect(); return x > b.left - 12 && x < b.right + 12 && y > b.top - 12 && y < b.bottom + 12; });
 
 // Contour lines around a dominant summit are star-shaped: walk outward along rays and find where each level is crossed.
@@ -422,12 +427,12 @@ let letzteStufen = []; // the levels labelled last time: kept while they still w
 function ringschrift() {
   const s = (peaked || handy.closest('.ort'))?.getBoundingClientRect();
   if (!s || s.bottom < 0 || s.top > innerHeight || !handy.offsetHeight) return;
-  const [cx, cy] = S.peaked, H = handy.offsetHeight, frei = H / 2 + 34, schmal = innerWidth < 900;
-  // usable rings: round enough and clear of the phone (on phones only the arc below it matters)
+  const [cx, cy] = S.peaked, [, , H, oben, unten] = buehne(), frei = cy - oben + 34, freiUnten = unten - cy + 30, schmal = innerWidth < 900;
+  // usable rings: round enough and clear of the phone and its buttons (on phones only the arc below it matters)
   const gut = ringe_um(cx, cy, H * 1.25).filter(Boolean).map(g => ({ ...g, rs: glaetten(g.rs) })).filter(({ rs }) => {
     let min = 1e9, max = 0;
     for (const r of rs) { min = Math.min(min, r); max = Math.max(max, r); }
-    return schmal ? min / max > .5 && rs[RAYS / 4] > frei : min / max > .58 && rs[RAYS * 3 / 4] > frei && rs[RAYS / 4] > frei;
+    return schmal ? min / max > .5 && rs[RAYS / 4] > freiUnten : min / max > .58 && rs[RAYS * 3 / 4] > frei && rs[RAYS / 4] > freiUnten;
   }).map(g => ({ ...g, mass: schmal ? g.rs[RAYS / 4] : g.rs.reduce((a, b) => a + b, 0) / RAYS }));
   const ziele = schmal ? [.66, .84] : [.7, .86];
   let genommen = letzteStufen.map(L => gut.find(g => Math.abs(g.L - L) < 1e-6)).filter(Boolean);
@@ -454,8 +459,10 @@ function ringschrift() {
     // the letters stand OUTSIDE the line: above it on the top arc, hanging below it on the bottom arc, so on a curve they
     // spread apart instead of crowding together; a label only goes where it has room
     const passt = (text, p) => text && textBreite(text) < laenge(p) * .8;
-    if (passt(o, oben)) svg += `<text${n === 0 ? ' class="warm"' : ''} dy="-4"><textPath href="#ring-${n}-o" startOffset="50%" text-anchor="middle">${o}</textPath></text>`;
-    if (passt(un, unten)) svg += `<text${n === 0 && !o ? ' class="warm"' : ''} dominant-baseline="hanging" dy="4"><textPath href="#ring-${n}-u" startOffset="50%" text-anchor="middle">${un}</textPath></text>`;
+    const obenFrei = cy - rs[RAYS * 3 / 4] > (kopf ? kopf.getBoundingClientRect().bottom : 0) + 30; // never tucked under the legend
+    const obenDa = obenFrei && passt(o, oben);
+    if (obenDa) svg += `<text${n === 0 ? ' class="warm"' : ''} dy="-4"><textPath href="#ring-${n}-o" startOffset="50%" text-anchor="middle">${o}</textPath></text>`;
+    if (passt(un, unten)) svg += `<text${n === 0 && !obenDa ? ' class="warm"' : ''} dominant-baseline="hanging" dy="4"><textPath href="#ring-${n}-u" startOffset="50%" text-anchor="middle">${un}</textPath></text>`;
   });
   ringe.innerHTML = svg;
 }
@@ -521,6 +528,50 @@ if (kippbar.length) {
   haupt.addEventListener('pointercancel', los);
   haupt.addEventListener('lostpointercapture', los);
   haupt.addEventListener('dragstart', e => e.preventDefault());
+}
+
+/* ---------- the phone's buttons: which screen of the app, and the app by day or by night ----------
+   Until the visitor picks, the app follows the system's light or dark mode, like the real one does. */
+for (const steuer of $$('.handy-steuer')) {
+  const bild = steuer.parentElement.querySelector('.bildschirm'), wahl = $('.screen-wahl', steuer), gleiter = $('.wahl-schlitten', steuer), modus = $('.modus-knopf', steuer);
+  const nacht = matchMedia('(prefers-color-scheme: dark)');
+  let dunkel = null; // null: follows the system
+  const zeigtDunkel = () => dunkel ?? nacht.matches;
+  const gleite = () => { const b = $('[aria-pressed="true"]', wahl); gleiter.style.width = b.offsetWidth + 'px'; gleiter.style.transform = `translateX(${b.offsetLeft}px)`; };
+  const modusZeigen = () => { const d = zeigtDunkel(); modus.setAttribute('aria-pressed', d); modus.setAttribute('aria-label', d ? 'App bei Nacht, zum Tag wechseln' : 'App bei Tag, zur Nacht wechseln'); };
+  // the old picture stays on top as a cover sheet and fades out once the new one is drawn
+  function blende(wechsel) {
+    const alt = $('.screen.an img', bild);
+    const deck = !ruhig && alt.complete && alt.naturalWidth ? Object.assign(alt.cloneNode(), { className: 'deckblatt', alt: '', loading: 'eager' }) : null;
+    if (deck) { deck.src = alt.currentSrc; bild.append(deck); }
+    wechsel();
+    if (!deck) return;
+    const neu = $('.screen.an img', bild);
+    let weg = false;
+    const ab = () => { if (weg) return; weg = true; deck.classList.add('weg'); setTimeout(() => deck.remove(), 500); };
+    // two frames: a changed <source> has been picked by then; a picture not loaded yet keeps the cover until it is
+    requestAnimationFrame(() => requestAnimationFrame(() => neu.complete && neu.naturalWidth ? ab() : neu.addEventListener('load', ab, { once: true })));
+    setTimeout(ab, 2000);
+  }
+  wahl.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.getAttribute('aria-pressed') === 'true') return;
+    blende(() => {
+      for (const k of $$('button', wahl)) k.setAttribute('aria-pressed', k === b);
+      for (const s of $$('.screen', bild)) { const an = s.dataset.screen === b.dataset.screen; s.classList.toggle('an', an); s.setAttribute('aria-hidden', !an); }
+    });
+    gleite();
+  });
+  modus.addEventListener('click', () => blende(() => {
+    dunkel = !zeigtDunkel();
+    for (const q of $$('source', bild)) q.media = dunkel ? 'all' : 'not all';
+    modusZeigen();
+  }));
+  nacht.addEventListener('change', modusZeigen);
+  steuer.hidden = false;
+  modusZeigen();
+  gleiter.style.transition = 'none'; gleite(); gleiter.offsetWidth; gleiter.style.transition = ''; // in place at once, glides from then on
+  new ResizeObserver(gleite).observe(wahl); // the webfont or a zoom changes the buttons' widths
 }
 
 /* ---------- the marked trail through the four rules ---------- */

@@ -201,9 +201,10 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 @media (min-width: 900px) { .peaked-gipfel { padding-block: 56px; } }
 /* the phone is a small object with depth: it leans toward the mouse, the phone's tilt sensor or a sideways swipe (karte.js) */
 .handy-buehne { perspective: 1100px; }
+.handy-buehne > .handy { margin-inline: auto; } /* the buttons below are wider than the phone */
 .handy {
   --kx: 0; --ky: 0;
-  position: relative; width: clamp(180px, 46vw, 236px); aspect-ratio: 506 / 1100; border-radius: 2.3rem; padding: 7px; background: #15161F;
+  position: relative; width: clamp(180px, 46vw, 236px); aspect-ratio: 600 / 1339; border-radius: 2.3rem; padding: 7px; background: #15161F;
   transform-style: preserve-3d; transform: rotateX(calc(var(--kx) * 1deg)) rotateY(calc(var(--ky) * 1deg));
   box-shadow: calc(var(--ky) * -1.4px) calc(30px + var(--kx) * 1.2px) 60px -26px rgb(5 18 14 / .55), inset 0 0 0 1.5px rgb(255 255 255 / .1);
   touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none;
@@ -213,13 +214,41 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 }
 .bildschirm { position: relative; height: 100%; border-radius: 1.85rem; overflow: hidden; transform: translateZ(1px); }
 .handy img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 1.85rem; -webkit-user-drag: none; }
-/* the Dynamic Island between clock and battery, measured on the iPhone screenshot: 28 % wide, 1.2 % from the top */
-.bildschirm::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 1.15%; width: 28.4%; height: 3.85%; translate: -50% 0; border-radius: 999px; background: #050507; }
+/* the screens of the app lie on top of each other; the one shown has .an. The old one stays on top as a cover sheet
+   (.deckblatt) and fades out once the new picture is drawn, so day and night cross-fade too (karte.js) */
+.bildschirm .screen { position: absolute; inset: 0; visibility: hidden; }
+.bildschirm .screen.an { visibility: visible; }
+.deckblatt { position: absolute; inset: 0; z-index: 1; pointer-events: none; transition: opacity .42s cubic-bezier(.22, 1, .36, 1), scale .42s cubic-bezier(.22, 1, .36, 1); }
+.deckblatt.weg { opacity: 0; scale: 1.025; }
+/* the camera hole between clock and battery, measured on the Android screenshot: 3.3 % from the top */
+.bildschirm::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 3.3%; width: 4%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; background: #050507; }
 .bildschirm::after { /* light that glides over the glass as the phone tilts */
   content: ""; position: absolute; z-index: 3; inset: -20%; pointer-events: none;
   background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .16) 48%, transparent 58%);
   transform: translateX(calc(var(--ky) * 1.6%)) translateY(calc(var(--kx) * -1%)); opacity: calc(.35 + (var(--ky) * var(--ky) + var(--kx) * var(--kx)) / 300);
 }
+/* floating below the phone: which screen of the app, and day or night. Built like the legend: a pill with a sliding mark */
+.handy-steuer { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 28px; animation: schweben 5s ease-in-out infinite; }
+.handy-steuer[hidden] { display: none; }
+.handy-steuer .screen-wahl { grid-column: 2; } /* the pill sits centred under the phone, day and night beside it */
+.handy-steuer .modus-knopf { justify-self: start; }
+@keyframes schweben { 50% { translate: 0 -4px; } }
+.screen-wahl, .modus-knopf { background: var(--grund); border: 1px solid var(--rand); box-shadow: 0 16px 30px -20px rgb(5 18 14 / .55); }
+.screen-wahl { position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
+.screen-wahl button {
+  position: relative; z-index: 1; min-height: 40px; padding: 0 15px; border: 0; border-radius: 999px; background: none;
+  color: var(--text); font: 600 .9375rem/1 var(--sans); cursor: pointer; transition: color .35s; -webkit-tap-highlight-color: transparent;
+}
+.screen-wahl button[aria-pressed="true"] { color: var(--grund); }
+.wahl-schlitten { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: 999px; background: var(--linie-text); transition: transform .5s cubic-bezier(.22, 1, .36, 1), width .5s cubic-bezier(.22, 1, .36, 1); }
+.modus-knopf { display: grid; place-items: center; width: 50px; height: 50px; padding: 0; border-radius: 50%; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.modus-knopf svg { width: 22px; height: 22px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.modus-knopf .sonne, .modus-knopf .mond { transform-origin: 12px 12px; transition: opacity .35s, transform .5s cubic-bezier(.22, 1, .36, 1); }
+.modus-knopf .mond { opacity: 0; transform: rotate(-70deg) scale(.5); }
+.modus-knopf[aria-pressed="true"] .sonne { opacity: 0; transform: rotate(70deg) scale(.5); }
+.modus-knopf[aria-pressed="true"] .mond { opacity: 1; transform: none; }
+.screen-wahl button:hover, .modus-knopf:hover { color: var(--linie-text); }
+.screen-wahl button[aria-pressed="true"]:hover { color: var(--grund); }
 .ringschrift { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
 .ringschrift text { font: 650 15px var(--sans); letter-spacing: .1em; fill: var(--linie-text); stroke: var(--grund); stroke-width: 6px; stroke-linejoin: round; paint-order: stroke fill; }
 .ringschrift text.warm { fill: var(--aktion); }
@@ -363,7 +392,7 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 .hinweis p { color: var(--text); }
 
 /* Peaked page: the screens of the app, side by side like a row of summits */
-.screens { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 3vw, 36px); align-items: start; }
+.screens { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 3vw, 36px); align-items: start; }
 .screens li { display: grid; gap: 14px; justify-items: center; text-align: center; }
 .screens .handy { width: min(100%, 210px); border-radius: 1.9rem; padding: 6px; }
 .screens .bildschirm, .screens .handy img { border-radius: 1.5rem; }
@@ -396,4 +425,6 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
   html { scroll-behavior: auto; }
   .gm, .gm.weg, .knopf, .schlitten { animation: none; transition: none; }
   .handy { transform: none; }
+  .handy-steuer { animation: none; }
+  .deckblatt, .wahl-schlitten, .modus-knopf .sonne, .modus-knopf .mond { transition: none; }
 }
