@@ -8,7 +8,20 @@
 <meta name="description" content="Peaked ist dein Bergtagebuch für die Zeit nach der Tour: Gipfel, Touren, Fotos und Erinnerungen, lokal auf deinem Handy, ohne Konto und ohne Abo.">
 <meta name="theme-color" content="#EAF2EE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#07120F" media="(prefers-color-scheme: dark)">
+<!-- link previews in messengers and social networks -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="alatoo.dev">
+<meta property="og:title" content="Peaked – Dein Bergtagebuch">
+<meta property="og:description" content="Gipfel, Touren und Fotos als Plakate an deiner Wand. Lokal auf deinem Handy, ohne Konto, ohne Abo.">
+<meta property="og:url" content="https://alatoodev.github.io/peaked/">
+<meta property="og:image" content="https://alatoodev.github.io/assets/vorschau.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Peaked, dein Bergtagebuch: ein Handy mit einem Gipfelplakat auf einer Höhenlinienkarte">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/baloo2-800.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../stil.css">
 </head>
 <body class="unterseite">
@@ -53,11 +66,31 @@
   <div class="peaked-gipfel handy-buehne">
     <div class="handy">
       <div class="bildschirm">
-        <picture>
+        <picture class="screen an" data-screen="logbuch">
           <source srcset="../assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)">
-          <img src="../assets/peaked-logbuch.jpg" alt="Peaked: das Logbuch mit dem Watzmann als letzter Tour" width="506" height="1100" draggable="false">
+          <img src="../assets/peaked-logbuch.jpg" alt="Peaked im Logbuch: das Gottesacker-Plateau als neuestes Plakat" width="600" height="1339" draggable="false">
+        </picture>
+        <picture class="screen" data-screen="wand" aria-hidden="true">
+          <source srcset="../assets/peaked-wand-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="../assets/peaked-wand.jpg" alt="Peaked: alle Plakate der Saison an der Wand, vom Nebelhorn bis zum Säntis" width="600" height="1339" draggable="false">
+        </picture>
+        <picture class="screen" data-screen="ziele" aria-hidden="true">
+          <source srcset="../assets/peaked-ziele-dunkel.jpg" media="(prefers-color-scheme: dark)">
+          <img src="../assets/peaked-ziele.jpg" alt="Peaked bei den Zielen: die Serles als Gipfel der Woche und das Saisonziel als Fahrschein" width="600" height="1339" draggable="false">
         </picture>
       </div>
+    </div>
+    <!-- floats below the phone: which screen of the app, and the app by day or by night (karte.js) -->
+    <div class="handy-steuer" hidden>
+      <div class="screen-wahl" role="group" aria-label="Bildschirm der App">
+        <span class="wahl-schlitten" aria-hidden="true"></span>
+        <button type="button" data-screen="logbuch" aria-pressed="true">Plakat</button>
+        <button type="button" data-screen="wand" aria-pressed="false">Wand</button>
+        <button type="button" data-screen="ziele" aria-pressed="false">Ziele</button>
+      </div>
+      <button class="modus-knopf" type="button" aria-pressed="false" aria-label="App bei Nacht zeigen" title="Tag oder Nacht" data-dev-sagt="Peaked kann auch Nacht.">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><g class="sonne"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g><path class="mond" d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z"/></svg>
+      </button>
     </div>
   </div>
   <svg class="ringschrift" aria-hidden="true"></svg>
@@ -71,20 +104,16 @@
   </div>
   <ul class="screens">
     <li>
-      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-logbuch.jpg" alt="Das Logbuch: jede Tour mit Foto, Bergname und einer Zeile zum Tag" width="506" height="1100" loading="lazy" draggable="false"></picture></div></div>
-      <h3>Logbuch</h3><p>Jede Tour wird ein Polaroid: Foto, Bergname, eine Zeile zum Tag.</p>
+      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-logbuch-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-logbuch.jpg" alt="Ein Plakat aus dem Logbuch: das Gottesacker-Plateau mit Foto, Höhe und Datum" width="600" height="1339" loading="lazy" draggable="false"></picture></div></div>
+      <h3>Plakat</h3><p>Jede Tour wird ein Plakat: dein Foto, der Berg groß gesetzt, darunter Datum, Höhe und eine laufende Nummer.</p>
     </li>
     <li>
-      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-tour-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-tour.jpg" alt="Die Seite zur Tour: Watzmann mit Strecke, Höhenmetern und Berggedächtnis" width="506" height="1100" loading="lazy" draggable="false"></picture></div></div>
-      <h3>Die Seite zur Tour</h3><p>Foto, Routen-Unterschrift und deine Worte. Das Berggedächtnis weiß, wann du schon oben warst.</p>
+      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-wand-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-wand.jpg" alt="Die Wand: alle Plakate der Saison 2026 nebeneinander" width="600" height="1339" loading="lazy" draggable="false"></picture></div></div>
+      <h3>Wand</h3><p>Deine Plakate hängen nebeneinander an der Wand, vom ersten Gipfel der Saison bis zum letzten.</p>
     </li>
     <li>
-      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-ziele-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-ziele.jpg" alt="Ziele: Gipfel der Woche und das Saisonziel" width="506" height="1100" loading="lazy" draggable="false"></picture></div></div>
-      <h3>Ziele</h3><p>Gipfellisten für Allgäu, Karwendel, Dolomiten und mehr, dazu ein Saisonziel und jede Woche ein Gipfel aus deiner Region.</p>
-    </li>
-    <li>
-      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-sammlung-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-sammlung.jpg" alt="Sammlung: die Saison 2026 als Poster mit dem höchsten Gipfel" width="506" height="1100" loading="lazy" draggable="false"></picture></div></div>
-      <h3>Sammlung</h3><p>Deine Saison als Poster, Abzeichen aus deinen eigenen Touren und ein Rückblick aufs Jahr.</p>
+      <div class="handy"><div class="bildschirm"><picture><source srcset="../assets/peaked-ziele-dunkel.jpg" media="(prefers-color-scheme: dark)"><img src="../assets/peaked-ziele.jpg" alt="Ziele: die Serles als Gipfel der Woche und das Saisonziel als Fahrschein" width="600" height="1339" loading="lazy" draggable="false"></picture></div></div>
+      <h3>Ziele</h3><p>Jede Woche ein Gipfel aus deiner Region, Gipfellisten für Allgäu, Karwendel, Dolomiten und mehr, und ein Saisonziel als Fahrschein, in den jeder Gipfel ein Loch knipst.</p>
     </li>
   </ul>
 </section>
