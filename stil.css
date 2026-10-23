@@ -2,7 +2,7 @@
    in the lines, summit marks with heights, a marked trail, the legend as menu and the cartouche at the bottom.
    No cards, glass, paper or 3D models floating above the map. */
 
-@font-face { font-family: 'Baloo 2'; src: url(assets/baloo2-800.woff) format('woff'); font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Baloo 2'; src: url(assets/baloo2-800.woff2) format('woff2'), url(assets/baloo2-800.woff) format('woff'); font-weight: 800; font-display: swap; }
 
 /* ---------- colors: change here, the map (karte.js) reads the --karte-* and --wolke-* values too ----------
    Contrast (WCAG): --text-2, --leise and --linie-text reach at least 4.5:1 on --grund; --aktion carries white text at 7:1. */
@@ -48,7 +48,7 @@
 
 /* ---------- base ---------- */
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; overflow-x: clip; } /* the fog behind text blocks reaches past the edge; without this phones zoom out to show it */
 body {
   margin: 0; background: var(--grund); color: var(--text);
   font: 400 1.0625rem/1.62 var(--sans);
@@ -355,7 +355,7 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 
 /* ---------- footer ---------- */
 .fuss { max-width: 1240px; margin: 0 auto; padding: 32px 0 calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: .875rem; color: var(--leise); border-top: 1px solid var(--rand); }
-.fuss nav { display: flex; gap: 20px; }
+.fuss nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .fuss a { color: var(--text-2); }
 
 /* ---------- opening: a drone flight down through the clouds onto Dev's summit ---------- */
