@@ -95,6 +95,46 @@
   <svg class="ringschrift" aria-hidden="true"></svg>
 </section>
 
+<!-- ============ waiting list: one mail on launch day (server: Designs/gipfelbuch-worker, POST /warteliste) ============ -->
+<section class="ort warte" id="warteliste" aria-labelledby="warte-titel" data-api="https://gipfelbuch.alatoo.dev">
+  <div class="buch-text ruhe">
+    <h2 id="warte-titel" class="freigestellt">Sag mir <em>Bescheid.</em></h2>
+    <p>Peaked kommt Ende November in den App Store und zu Google Play, in der ersten Woche zum Startpreis. Trag dich ein, dann schreibe ich dir genau eine Mail, wenn es so weit ist.</p>
+  </div>
+  <form class="eintragen blatt ruhe" novalidate>
+    <label class="feld" for="wl-email">Deine E-Mail-Adresse</label>
+    <input id="wl-email" name="email" type="email" maxlength="254" required autocomplete="email" placeholder="du@beispiel.de">
+    <label class="falle" aria-hidden="true">Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+    <label class="haken"><input type="checkbox" name="einverstanden" required> Schreib mir einmal, wenn Peaked im Store ist. Danach wird meine Adresse gelöscht.</label>
+    <div class="absenden">
+      <button class="knopf" type="submit">Eintragen</button>
+      <p class="status" role="status"></p>
+    </div>
+    <p class="vorschau-hinweis">Keine Werbung, kein Newsletter, keine Weitergabe. Mehr im <a href="../datenschutz.html#warteliste">Datenschutz</a>.</p>
+  </form>
+</section>
+<script>
+{ // ponytail: one small form, so no extra file
+  const sec = document.getElementById('warteliste'), form = sec.querySelector('form'), status = sec.querySelector('.status');
+  const melde = (t, fehler = false) => { status.textContent = t; status.classList.toggle('fehler', fehler); };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = form.email.value.trim(), gueltig = !!email && form.email.checkValidity();
+    form.email.setAttribute('aria-invalid', !gueltig);
+    if (!gueltig) { form.email.focus(); return melde('Bitte gib eine gültige E-Mail-Adresse an.', true); }
+    if (!form.einverstanden.checked) { form.einverstanden.focus(); return melde('Bitte setz das Häkchen, sonst darf ich dir nicht schreiben.', true); }
+    const knopf = form.querySelector('button'); knopf.disabled = true; melde('Wird eingetragen …');
+    try {
+      const r = await fetch(`${sec.dataset.api.replace(/\/$/, '')}/warteliste`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, einverstanden: true, website: form.website.value }) });
+      if (!r.ok) { const d = await r.json().catch(() => ({})); return melde(d.fehler || 'Das hat nicht geklappt. Versuch es bitte später noch einmal.', true); }
+      form.reset(); melde('Danke! Ich melde mich, sobald Peaked da ist.');
+    } catch { melde('Keine Verbindung. Versuch es bitte später noch einmal.', true); }
+    finally { knopf.disabled = false; }
+  });
+}
+</script>
+
 <!-- ============ the app, screen by screen ============ -->
 <section class="ort" id="ansehen" aria-labelledby="ansehen-titel">
   <div class="abschnitt-kopf ruhe">
