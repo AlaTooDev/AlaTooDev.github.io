@@ -323,6 +323,7 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 .eintraege .wer { font-weight: 700; color: var(--text); }
 .eintraege .wer .hoehe { font-weight: 600; color: var(--leise); }
 .eintraege .was { grid-column: 2; color: var(--text-2); }
+.eintraege li.leer { display: block; color: var(--text-2); } /* notices have no summit icon; in the grid their text squeezed into the 16px icon column */
 .eintraege .marke-idee { font-size: .8rem; font-weight: 700; color: var(--aktion); margin-left: 6px; }
 .eintragen { display: grid; gap: 10px; width: min(100%, 30rem); justify-self: center; }
 .falle { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; } /* a field only bots fill in */
@@ -336,11 +337,11 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 .art input:focus-visible + span { outline: 3px solid var(--warm); outline-offset: 3px; }
 .feld { display: flex; justify-content: space-between; font-weight: 700; margin-top: 6px; }
 .zaehler { font-weight: 500; color: var(--leise); font-variant-numeric: tabular-nums; }
-.eintragen input[type=text], .eintragen textarea {
+.eintragen input[type=text], .eintragen input[type=email], .eintragen textarea {
   width: 100%; font: 500 1rem/1.45 var(--sans); color: var(--text); background: var(--feld);
   border: 1.5px solid var(--rand); border-radius: 8px; padding: 11px 13px; resize: vertical;
 }
-.eintragen input[type=text]:focus, .eintragen textarea:focus { outline: none; border-color: var(--linie-text); box-shadow: 0 0 0 3px rgb(22 131 108 / .2); }
+.eintragen input[type=text]:focus, .eintragen input[type=email]:focus, .eintragen textarea:focus { outline: none; border-color: var(--linie-text); box-shadow: 0 0 0 3px rgb(22 131 108 / .2); }
 .eintragen [aria-invalid="true"] { border-color: var(--aktion); }
 .eintragen ::placeholder { color: var(--leise); opacity: .8; }
 .haken { display: flex; gap: 10px; align-items: flex-start; font-size: .9375rem; margin-top: 6px; color: var(--text-2); }
@@ -352,6 +353,10 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 @media (min-width: 900px) {
   .buch { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); gap: clamp(32px, 6vw, 96px); align-items: center; padding-bottom: clamp(56px, 9vh, 104px); }
 }
+
+/* ---------- Peaked waiting list: laid out like the guestbook, without its map of summits ---------- */
+.warte { grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) { .warte { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); gap: clamp(32px, 6vw, 96px); align-items: center; } }
 
 /* ---------- footer ---------- */
 .fuss { max-width: 1240px; margin: 0 auto; padding: 32px 0 calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: .875rem; color: var(--leise); border-top: 1px solid var(--rand); }
