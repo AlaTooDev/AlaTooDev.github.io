@@ -240,7 +240,8 @@ void main() {
 }`;
 
 const canvas = $('.karte'), hm = $('.hoehenmesser'), hmWert = $('.hm-wert');
-const handy = $('.handy'), peaked = $('.peaked'), ringe = $('.ringschrift'), nebelgipfel = $('.nebelgipfel'), handySteuer = $('.handy-steuer');
+const handy = $('.handy-buehne > .handy'), // only the big phone on the start page; the Peaked page shows a row of screens instead
+      peaked = $('.peaked'), ringe = $('.ringschrift'), nebelgipfel = $('.nebelgipfel'), handySteuer = $('.handy-steuer');
 const buchTitel = $('#buch-titel');
 // the phone and the buttons floating below it stand on one summit: its middle, height, top and bottom
 function buehne() {
