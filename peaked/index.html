@@ -49,7 +49,7 @@
 <main id="inhalt">
 
 <!-- ============ Peaked on its summit ============ -->
-<section class="ort erste" id="oben" aria-labelledby="titel">
+<section class="ort erste mit-warte" id="oben" aria-labelledby="titel">
   <div class="peaked-text ruhe">
     <h1 id="titel" class="freigestellt">Peaked, dein <em>Bergtagebuch.</em></h1>
     <p class="lead">Für die Zeit nach der Tour: Halte Gipfel, Wege, Fotos und die kleinen Geschichten fest, die sonst zwischen Kamerarolle und Erinnerung verschwinden.</p>
@@ -62,25 +62,25 @@
     </dl>
     <p class="aktionen"><a class="leiser-link" href="hilfe.html">Fragen? Zur Hilfe</a><a class="leiser-link" href="datenschutz.html">Datenschutz</a></p>
   </div>
-</section>
 
-<!-- ============ waiting list: one mail on launch day (server: Designs/gipfelbuch-worker, POST /warteliste) ============ -->
-<section class="ort warte" id="warteliste" aria-labelledby="warte-titel" data-api="https://gipfelbuch.alatoo.dev">
-  <div class="buch-text ruhe">
-    <h2 id="warte-titel" class="freigestellt">Sag mir <em>Bescheid.</em></h2>
-    <p>Peaked kommt Ende November in den App Store und zu Google Play, in der ersten Woche zum Startpreis. Trag dich ein, dann schreibe ich dir genau eine Mail, wenn es so weit ist.</p>
-  </div>
-  <form class="eintragen blatt ruhe" novalidate>
-    <label class="feld" for="wl-email">Deine E-Mail-Adresse</label>
-    <input id="wl-email" name="email" type="email" maxlength="254" required autocomplete="email" placeholder="du@beispiel.de">
-    <label class="falle" aria-hidden="true">Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
-    <label class="haken"><input type="checkbox" name="einverstanden" required> Schreib mir einmal, wenn Peaked im Store ist. Danach wird meine Adresse gelöscht.</label>
-    <div class="absenden">
-      <button class="knopf" type="submit">Eintragen</button>
-      <p class="status" role="status"></p>
+  <!-- waiting list: one mail on launch day (server: Designs/gipfelbuch-worker, POST /warteliste); #warteliste stays the bio-link target -->
+  <div class="warte-spalte" id="warteliste" aria-labelledby="warte-titel" role="group" data-api="https://gipfelbuch.alatoo.dev">
+    <div class="buch-text ruhe">
+      <h2 id="warte-titel" class="freigestellt">Sag mir <em>Bescheid.</em></h2>
+      <p>Peaked kommt Ende November in den App Store und zu Google Play, in der ersten Woche zum Startpreis. Trag dich ein, dann schreibe ich dir genau eine Mail, wenn es so weit ist.</p>
     </div>
-    <p class="vorschau-hinweis">Keine Werbung, kein Newsletter, keine Weitergabe. Mehr im <a href="../datenschutz.html#warteliste">Datenschutz</a>.</p>
-  </form>
+    <form class="eintragen blatt ruhe" novalidate>
+      <label class="feld" for="wl-email">Deine E-Mail-Adresse</label>
+      <input id="wl-email" name="email" type="email" maxlength="254" required autocomplete="email" placeholder="du@beispiel.de">
+      <label class="falle" aria-hidden="true">Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+      <label class="haken"><input type="checkbox" name="einverstanden" required> Schreib mir einmal, wenn Peaked im Store ist. Danach wird meine Adresse gelöscht.</label>
+      <div class="absenden">
+        <button class="knopf" type="submit">Eintragen</button>
+        <p class="status" role="status"></p>
+      </div>
+      <p class="vorschau-hinweis">Keine Werbung, kein Newsletter, keine Weitergabe. Mehr im <a href="../datenschutz.html#warteliste">Datenschutz</a>.</p>
+    </form>
+  </div>
 </section>
 <script>
 { // ponytail: one small form, so no extra file

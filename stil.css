@@ -355,8 +355,9 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 }
 
 /* ---------- Peaked waiting list: laid out like the guestbook, without its map of summits ---------- */
-.warte { grid-template-columns: minmax(0, 1fr); align-items: start; }
-@media (min-width: 900px) { .warte { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); gap: clamp(32px, 6vw, 96px); align-items: center; } }
+.warte-spalte { display: grid; gap: 22px; align-content: center; }
+.mit-warte { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .mit-warte { grid-template-columns: minmax(0, 1fr) minmax(0, 28rem); gap: clamp(32px, 6vw, 96px); align-items: center; } }
 
 /* ---------- footer ---------- */
 .fuss { max-width: 1240px; margin: 0 auto; padding: 32px 0 calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: .875rem; color: var(--leise); border-top: 1px solid var(--rand); }
@@ -379,6 +380,19 @@ dev-figur > svg { display: block; width: 100%; height: 100%; }
 /* ---------- pages besides the start: Peaked, help, privacy, imprint, 404 ---------- */
 .unterseite .ort { min-height: auto; padding-block: clamp(110px, 16vh, 150px) clamp(40px, 7vh, 72px); }
 .unterseite .ort.erste { min-height: 100svh; }
+/* like the start page: one scroll = exactly one screen. Content is sized to the window height so no page outgrows it. */
+@media (min-width: 900px) and (min-height: 601px) {
+  .unterseite .ort { min-height: 100svh; padding-block: clamp(96px, 14vh, 130px) clamp(28px, 5vh, 56px); }
+  .unterseite .mit-warte .peaked-text { gap: clamp(12px, 2.2vh, 22px); }
+  .unterseite .mit-warte .etikett div { padding-block: clamp(5px, .9vh, 9px); }
+  #ansehen, #kann { grid-template-columns: minmax(0, .8fr) minmax(0, 1.7fr); column-gap: clamp(32px, 5vw, 80px); align-items: center; align-content: center; }
+  #ansehen .abschnitt-kopf, #kann .abschnitt-kopf { align-self: end; }
+  #ansehen .screens { grid-column: 2; grid-row: 1 / 3; }
+  .unterseite .screens .handy { width: min(100%, 210px, calc((100svh - 345px) / 2.23)); }
+  #kann .merkmale { grid-column: 2; grid-row: 1 / 3; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 3vh, 26px) 36px; }
+  #kann .zitat { align-self: start; }
+}
+@media (min-width: 900px) and (max-width: 1150px) and (min-height: 601px) { .unterseite .screens .handy { width: min(100%, 210px, calc((100svh - 400px) / 2.23)); } } /* narrower columns wrap the captions into more lines */
 .unterseite h1 { font-size: clamp(2.6rem, 6vw, 4.8rem); }
 .abschnitt-kopf { display: grid; gap: 14px; }
 .zitat { margin: 0; max-width: 28em; font: 600 1.25rem/1.45 var(--sans); color: var(--linie-text); }
